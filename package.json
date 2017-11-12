@@ -1,14 +1,14 @@
 {
     "name": "WMF-blog",
     "title": "WMF Blog",
-    "author": "WMF <WMFpro@gmail.com>",
+    "author": "WMF <1037724555@qq.com>",
     "version": "1.7.0",
-    "homepage": "http://WMFpro.github.io",
+    "homepage": "https://github.com/wmf217/",
     "repository": {
         "type": "git",
-        "url": "https://github.com/WMFpro/WMFpro.github.io"
+        "url": "https://github.com/wmf217/wmf217.github.io"
     },
-    "bugs": "https://github.com/WMFpro/WMFpro.github.io/issues",
+    "bugs": "https://github.com/wmf217/wmf217.github.io/issues",
     "devDependencies": {
         "grunt": "~0.4.5",
         "grunt-contrib-less": "~0.11.4",
