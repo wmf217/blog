@@ -67,7 +67,7 @@ ga_domain: mingf.wang
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "待到明年九月八"
+sidebar-about-description: "endure the pain，enjoy the gain"
 sidebar-avatar: /img/avatar.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
