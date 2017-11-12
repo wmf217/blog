@@ -29,7 +29,10 @@ WMF 的 Blog 搭建记录。
 
 ## 正文
 本文搭建的方式为github Pages+Jekyll
-#### 第一步：github创建项目
+##### 第一步：github创建profile
+项目名称要填写：wmf217.github.io, 其中wmf217是github的账号，该项目即可由github托管通过地址wmf217.github.io访问，如果想自配域名，可以在setting->Custom domain里填写，例如：http://www.mingf.wang(我的域名)，域名需要解析到：wmf217.github.io
+
+
 
 —— WMF 后记于 2017.11
 
