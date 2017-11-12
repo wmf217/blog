@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Hello 2015"
+title:      "Hello World"
 subtitle:   " \"Hello World, Hello Blog\""
 date:       2017-11-12 19:25:00
 author:     "wmf"
@@ -30,10 +30,51 @@ WMF 的 Blog 搭建记录。
 ## 正文
 本文搭建的方式为github Pages+Jekyll
 ##### 第一步：github创建profile
-项目名称要填写：wmf217.github.io, 其中wmf217是github的账号，该项目即可由github托管通过地址wmf217.github.io访问，如果想自配域名，可以在setting->Custom domain里填写，例如：http://www.mingf.wang(我的域名)，域名需要解析到：wmf217.github.io
+仓库名称要填写：wmf217.github.io, 其中wmf217是github的账号，该项目即可由github托管通过地址wmf217.github.io访问，如果想自配域名，可以在setting->Custom domain里填写，例如：http://www.mingf.wang(我的域名)，域名需要解析到：wmf217.github.io
 
-
-
+##### 第二步：编写代码
+项目使用jekyll搭建，使用的是Liquid语言，有代码基础学起来很简单
+```
+---
+layout: default
+title: 我的Blog
+---
+<h2>{{ page.title }}</h2>
+<p>最新文章</p>
+<ul>
+{% for post in site.posts %}
+<li>{{ post.date | date_to_string }} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
+```
+简单的一个循环，一个完整的blog其实就是一个列表页一个详情页 这里有介绍流程：http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html
+本地想要预览需要安装ruby+DevKit+jekyll 我是无耻的copy了一份别人的代码然后修改，实在不想自己写
+每篇文章的头部，必须有一个yaml文件头，用来设置一些元数据。它用三根短划线"---"，标记开始和结束，里面每一行设置一种元数据
+最终目录结构：
+```
+/jekyll
+　　　　|--　_config.yml
+　　　　|--　_layouts
+　　　　|　　　|--　default.html 
+　　　　|--　_posts
+　　　　|　　　|--　2012-08-25-hello-world.markdown
+　　　　|--　index.html
+```
+其中posts是存放文章的(markdown)
+注意：---必须前面一定不能有空格否则会解析不出代码，截至二把源代码显示在网页上，window的文件必须无BOM编码
+##### 第三步：git上传代码
+搞了半天的git命令，遇到很多的坑，这里附一个找到的比较好的文章:30 分钟 git 命令入门到放弃(http://blog.jobbole.com/102957/)
+基本的语法
+``` 
+$ git init //初始化git
+$ git add . //添加所有文件
+$ git commit -m "Initial commit." //提交文件
+$ git remote add origin https://github.com/wmf217/wmf217.github.io.git // 远程仓库链接
+$ git push origin master //有时候会提示错误 git push origin master -f (还不太理解)
+```
+项目就添加上去，使用图形界面更方便点，要不各种报错 github desktop/sourceTree
+##### 第四步：markdown编写文章
+刚好使用Visual Studio Code 编辑器,又被他的强大折服了，下一个插件叫markdown preview enhanced,创建markdown文件，shift+ctl+m(预览)，叫可以编写blog内容，最后git同步上去
 —— WMF 后记于 2017.11
 
 
