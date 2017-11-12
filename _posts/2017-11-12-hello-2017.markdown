@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      "Hello World"
-subtitle:   " \"Hello World, Hello Blog\""
+title:      "WMF 的 Blog 搭建记录"
+subtitle:   " \"过程相当费劲\""
 date:       2017-11-12 19:25:00
 author:     "wmf"
 header-img: "img/post-bg-2017.jpg"
