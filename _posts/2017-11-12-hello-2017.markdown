@@ -11,8 +11,6 @@ tags:
     - git
 ---
 
-> “Yeah It's on. ”
-
 
 ## 前言
 
