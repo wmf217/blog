@@ -74,7 +74,10 @@ $ git push origin master //有时候会提示错误 git push origin master -f (�
 ```
 项目就添加上去，使用图形界面更方便点，要不各种报错 github desktop/sourceTree
 ##### 第四步：markdown编写文章
-刚好使用Visual Studio Code 编辑器,又被他的强大折服了，下一个插件叫markdown preview enhanced,创建markdown文件，shift+ctl+m(预览)，叫可以编写blog内容，最后git同步上去
+刚好使用Visual Studio Code 编辑器,又被他的强大折服了，下一个插件叫markdown preview enhanced,创建markdown文件，shift+ctl+m(预览)，可以编写blog内容，最后git同步上去
+##### 最后：待解决问题
+每次上传文件系统都会崩溃个10来分钟，很不方便
+有时间自己本地搭一个jekyll网站传上去
 —— WMF 后记于 2017.11
 
 
