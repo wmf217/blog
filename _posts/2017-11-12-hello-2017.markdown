@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "WMF 的 Blog 搭建记录"
-subtitle:   " \"过程相当费劲\""
+subtitle:   " \"有点麻烦，搭完有点后悔\""
 date:       2017-11-12 19:25:00
 author:     "wmf"
 header-img: "img/post-bg-2017.jpg"
