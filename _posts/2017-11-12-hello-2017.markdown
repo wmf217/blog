@@ -30,7 +30,7 @@ WMF 的 Blog 搭建记录。
 ## 正文
 本文搭建的方式为github Pages+Jekyll
 ##### 第一步：github创建profile
-仓库名称要填写：wmf217.github.io, 其中wmf217是github的账号，该项目即可由github托管通过地址wmf217.github.io访问，如果想自配域名，可以在setting->Custom domain里填写，例如：http://www.mingf.wang(我的域名)，域名需要解析到：wmf217.github.io
+仓库名称要填写：wmf217.github.io, 其中wmf217是github的账号，该项目即可由github托管通过地址wmf217.github.io访问，如果想自配域名，可以在setting->Custom domain里填写，例如：www.mingf.wang(我的域名)，域名需要解析到：wmf217.github.io
 
 ##### 第二步：编写代码
 项目使用jekyll搭建，使用的是Liquid语言，有代码基础学起来很简单
@@ -47,7 +47,7 @@ title: 我的Blog
 {% endfor %}
 </ul>
 ```
-简单的一个循环，一个完整的blog其实就是一个列表页一个详情页 这里有介绍流程：http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html
+简单的一个循环，一个完整的blog其实就是一个列表页一个详情页 这里有介绍流程：(http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html)
 本地想要预览需要安装ruby+DevKit+jekyll 我是无耻的copy了一份别人的代码然后修改，实在不想自己写
 每篇文章的头部，必须有一个yaml文件头，用来设置一些元数据。它用三根短划线"---"，标记开始和结束，里面每一行设置一种元数据
 最终目录结构：
