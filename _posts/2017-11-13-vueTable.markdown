@@ -142,3 +142,16 @@ this.$on('refresh', function (url = '', expurl = '') {
 })
 ```
 这句代码是强制刷新用的，有些临时方案还需改进，但用不到了，但有一个组件通讯的方法在里面是一定会用到的
+附：父组件通过$refs找到子组件，然后调用$emit通知子组件
+```js
+div ref = "son"
+this.$refs.son.$emit('sonfunc', 1)
+
+// 在子组件  的 created 中
+this.$on('sonfunc ', function () {
+  // ...
+})
+```
+注意：$ref方法需要在挂载之后调用否则取不到值
+mounted
+
