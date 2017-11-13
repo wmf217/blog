@@ -1,0 +1,60 @@
+---
+layout:     post
+title:      "自封装简单分页方法"
+subtitle:   " \"基于pagination插件简单的分页\""
+date:       2017-11-12 19:25:00
+author:     "wmf"
+header-img: "img/post-bg-js-version.jpg"
+catalog: true
+tags:
+    - JS
+    - 面向对象
+---
+* @param url: 请求地址，json：请求数据，rows：分页条数，callback: 回调方法
+* 依赖layer,jquery,pagination插件
+* 若使用搜索等功能，需要改变参数，通过json的浅复制实现
+```js
+var DataLists = function (url, json, rows, callback) {
+    this.PAGE = 1;
+    this.ROW  = rows;
+    this.URL  = url;
+    this.json = json
+    this.callback = callback;
+    this.pageSite = function(total) {
+        // var self = this;
+        $('#page').pagination({
+            totalData:total,
+            showData:this.ROW,
+            callback:function (api) {
+                this.PAGE = api.getCurrent();
+                this.lists(false);
+            }.bind(this)
+        });
+    };
+    this.lists = function (sp) { //sp为true重新规划分页，false不重新规划分页
+        // var self = this;
+        layer.load(2);
+        $.post(this.URL+'&page='+this.PAGE+'&row='+this.ROW, this.json, function (data) {
+            layer.closeAll('loading');
+            if (sp) {
+                this.pageSite(data.data.count);
+            }
+            if (typeof this.callback == "function") {
+                this.callback(data);
+            }
+        }.bind(this), 'json');
+    };
+}
+````
+说明：比较简单的方法,主要使用pagination插件。之前匿名函数的this变化问题使用
+let self = this来解决，新学了bind方法绑定this指向问题
+使用方法：
+```js
+var callback = function () {
+    //.....
+}
+var params = {};
+var ACCOUNT = new DataLists(url,params,20,callback); //20条一页
+ACCOUNT.lists(true); //可以使用给默认值为true
+```
+##end
