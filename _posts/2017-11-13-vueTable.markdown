@@ -1,0 +1,144 @@
+---
+layout:     post
+title:      "基于ivew封装的datable组件"
+subtitle:   " \"用了很久去研究ivew源码才实现的封装\""
+date:       2017-11-13 20:40:00
+author:     "wmf"
+header-img: "img/in-post/vue.jpg"
+catalog: true
+tags:
+    - js
+    - vue
+---
+
+##前言
+ivew有很多组件,比如table search page这几个最为常用，因为之前用过datatable,不想每次开发都把时间耗费在分页这种简单但易错的事情上，所以基于这三个组件封装了一个datable,使用的时候也是不断优化，现在感觉功能基本齐全可用
+##正文
+先贴代码
+```js
+<template>
+  <div class="datatable">
+      <Table :show-header="showHeader" :context="self.$parent" :columns="columns" :data="currentData" @on-selection-change="selectchange" @on-sort-change="changeOrder">
+          <div v-if="ifsearch" class="tablename" slot="header">
+              <div class="t-head-top">
+                  <p class="tablename-title" v-html="tablename"></p>
+                  <Input  :placeholder="searchName" icon="search" class="search" v-model="search" @on-change="list()"></Input>
+              </div>
+              <slot name="buttons"></slot>
+          </div>
+      </Table>
+    <slot name="pageLeft"></slot><Page :total="total" :current="current" show-sizer style="float: right; margin-top: 20px;" @on-change="change" @on-page-size-change="changesize" :page-size="pagesize"></Page>
+    <div class="clear"></div>
+  </div>
+</template>
+<script>
+    export default {
+        created () {
+            this.list()
+            this.$on('refresh', function (url = '', expurl = '') {
+                if (url) this.url = url // todo 临时方案
+                if (expurl) this.expurl = expurl // todo 临时方案
+                this.list(this.current, this.pagesize)
+            })
+        },
+        props: {
+            columns: {
+                type: Array,
+                default () {
+                    return []
+                }
+            },
+            data: {
+                type: Array,
+                default () {
+                    return []
+                }
+            },
+            tablename: String,
+            dataname: String,
+            url: String,
+            expurl: {
+                type: String,
+                default: ''
+            },
+            ifsearch: {
+                type: Boolean,
+                default: true
+            },
+            showHeader: {
+                type: Boolean,
+                default: true
+            },
+            searchName: {
+                type: String,
+                default: '请输入...'
+            }
+        },
+        data () {
+            return {
+                self: this,
+                search: '',
+                total: 0,
+                pagesize: 10,
+                currentData: this.data,
+                order: '',
+                current: 1 // 当前页码脚底显示
+            }
+        },
+        methods: {
+            list (page = 1, pagesize = 10) {
+                let self = this
+                self.current = page
+                let start = (page - 1) * pagesize
+                let url = this.url + '?iDisplayStart=' + start + '&iDisplayLength=' + pagesize + '&sSearch=' + this.search + this.order + this.expurl
+                this.axios.get(url).then(function (response) {
+                    return response.data
+                }).then(function (data) {
+                    self.dataTotal = data
+                    self.$emit('on-data-change', data)
+                })
+            },
+            change (page) {
+                this.list(page, this.pagesize)
+                // console.log(page)
+            },
+            changesize (pagesize) {
+                this.pagesize = pagesize
+                this.list(this.page, pagesize)
+            },
+            // 带checkbox的 table获取数据
+            selectchange (selection) {
+                this.$emit('on-selection-change', selection)
+            },
+            changeOrder (column) {
+                this.order = '&key=' + column.key + '&order=' + column.order
+                this.list(1, 10)
+            }
+        },
+        computed: {
+            dataTotal: {
+                get: function () {
+                },
+                set: function ({data, recordsFiltered}) {
+                    this.currentData = data
+                    this.total = recordsFiltered
+                }
+            }
+        },
+        watch: {
+            currentData () {
+                this.$parent[this.dataname] = this.currentData
+            }
+        }
+    }
+</script>
+```
+组件还好在使用过程中有很多地方需要考虑，所以就完善了一些功能同事可以自定义功能，比如slot的使用都是在实际需求中更改的，代码的核心部分，虽然只有一句，但也是研究了源码发现的，文档里没有，就是==context="self.$parent"==，这句话太重要了，有了他才可以实现代码的传入，其中：
+```js
+this.$on('refresh', function (url = '', expurl = '') {
+    if (url) this.url = url // todo 临时方案
+    if (expurl) this.expurl = expurl // todo 临时方案
+    this.list(this.current, this.pagesize)
+})
+```
+这句代码是强制刷新用的，有些临时方案还需改进，但用不到了，但有一个组件通讯的方法在里面是一定会用到的
