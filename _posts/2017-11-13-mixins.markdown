@@ -1,0 +1,134 @@
+---
+layout:     post
+title:      "vue混合"
+subtitle:   " \"比较好的混合写法记录\""
+date:       2017-11-13 20:10:00
+author:     "wmf"
+header-img: "img/in-post/vue.jpg"
+catalog: true
+tags:
+    - js
+    - vue
+---
+
+##前言
+同上一篇一样，这一篇介绍的是另一个vue的技巧--混合，有点类似于php的trait感觉，用的时候感觉非常好用，可以实现多个人共写一个界面的功能，也可以以混合方式实现代码的高复用，但不知道为什么听说是被vue取消了
+##正文
+混合概述：组件使用混合对象时,所有混合对象的选项将被混入该组件本身的选项
+####直接贴代码
+* 页面窗口代销调整事件
+```js
+// resize.js
+export default {
+    mounted () {
+        this.$bindResize()
+    },
+    methods: {
+        $bindResize () {
+            this._handleResize = (e) => {
+                if (this.onResize) this.onResize()
+            }
+            window.addEventListener('resize', this._handleResize)
+        },
+        $unBindResize () {
+            if (this._handleResize) window.removeEventListener('resize', this._handleResize)
+        }
+    },
+    beforeDestroy () {
+        this.$unBindResize()
+    }
+}
+
+```
+* 滑动滑轮事件
+```js
+ // scroll.js
+ export default {
+     props: {
+         scroller: {
+             type: [HTMLDocument, Element, Window],
+             default () {
+                 return window
+             }
+         }
+     },
+     methods: {
+         $bindScroll () {
+             this._handleScroll = (e) => {
+                 if (this.onScroll) this.onScroll()
+             }
+             this.scroller.addEventListener('scroll', this._handleScroll)
+         },
+         $unbindScroll () {
+             if (this._handleScroll) this.scroller.removeEventListener('scroll', this._handleScroll)
+         }
+     },
+     beforeDestroy () {
+         this.$unbindScroll()
+     }
+ }
+
+```
+* 一个自开发的边目录混合
+```js
+// dot.js
+import { removeAllClass } from '@/util/assist'
+import scroll from '@/mixins/scroll'
+export default {
+    mixins: [ scroll ],
+    data () {
+        return {
+            dots: [],
+            dothigh: []
+        }
+    },
+    methods: {
+        $go (index, tag) {
+            const content = document.getElementById('content')
+            let jump = content.getElementsByTagName(tag)
+            let total = jump[index].offsetTop// Chrome
+            document.body.scrollTop = total// Firefox
+            document.documentElement.scrollTop = total// Safari
+            window.pageYOffset = total
+        },
+        $addnav () {
+            this.dots = []
+            this.dothigh = []
+            this.$unbindScroll()
+            const content = document.getElementById('content')
+            let h2index = 0
+            for (let v of content.children) {
+                if (v.tagName == 'H1') {
+                    this.dothigh.push(v.offsetTop)
+                    this.dots.push({'title': v.innerHTML, 'children': []})
+                }
+                if (v.tagName == 'H2') {
+                    this.dothigh.push(v.offsetTop)
+                    this.dots[this.dots.length - 1].children.push({'title': v.innerHTML, 'index': h2index++})
+                }
+            }
+            if (this.dothigh.length) {
+                this.$bindScroll()
+            }
+        },
+        onScroll () {
+            let nowtop = document.body.scrollTop
+            let index = -1
+            for (let i = 0; i < this.dothigh.length; i++) {
+                if (nowtop <= this.dothigh[i]) {
+                    index = i
+                    break
+                }
+            }
+            if (index == -1) index = this.dothigh.length - 1
+            const content = document.getElementById('nav')
+            let lidom = content.getElementsByTagName('li')
+            removeAllClass(lidom, 'on')
+            lidom[index].classList.add('on')
+        }
+    }
+}
+
+
+```
+这个最后一个混合的效果就是文章预览时滑动内容左侧的目录结构随内容而改变，有一个比较特殊的地方是它本身作为混合却可以引用另一个混合`import scroll from '@/mixins/scroll'`,非常喜欢这种写法
