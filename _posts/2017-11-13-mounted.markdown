@@ -1,0 +1,98 @@
+---
+layout:     post
+title:      "vue手动挂载组件"
+subtitle:   " \"之前的研究记录，已经忘了实现方法\""
+date:       2017-11-13 21:04:00
+author:     "wmf"
+header-img: "img/in-post/vue.jpg"
+catalog: true
+tags:
+    - js
+    - vue
+---
+
+##前言
+这是一个将父组件定义的方法传入子组件并执行的方法，一般很难用到，参考的是ivew的手动挂载方法
+##正文
+son.vue:
+```js
+<template>
+    <div ref="son">
+    </div>
+</template>
+<script>
+import Vue from 'vue'
+export default {
+    name: 'Son',
+    data () {
+        return {
+            context: this.$parent
+        }
+    },
+    mounted () {
+        this.$nextTick(() => {
+            this.$el.innerHTML = ''
+            const $parent = this.context
+            const son = document.createElement('div')// 创建一个dom对象
+            son.innerHTML = this.$parent.render()
+            // console.log(typeof (son))// Object
+            // console.log(typeof (son.outerHTML))//  String
+            const res = Vue.compile(son.outerHTML)// 把字符串解析成vue能解析的格式
+            let methods = {}
+            Object.keys($parent).forEach(key => { // 循环父级方法
+                const func = $parent[key]
+                if (typeof (func) === 'function' && (func.name === 'boundFn' || func.name === 'n')) {
+                    methods[key] = func
+                }
+            })
+            // console.log($parent.$data === $parent._data)//  一毛一样
+            const component = new Vue({// 生成组件
+                name: 'new-son',
+                render: res.render, // todo render的用法
+                staticRenderFns: res.staticRenderFns,
+                methods: methods,
+                data () {
+                    return $parent._data
+                },
+                created () {
+                    // console.log(this)
+                }
+            })
+            component.$mount(this.$refs.son) // 手动挂载,也可以下面写
+            // const Son = component.$mount()
+            // this.$refs.son.appendChild(Son.$el)
+        })
+    }
+}
+</script>
+```
+father.vue:
+```js
+/**
+**  父级配置子级函数
+**/
+<template>
+    <Son></Son>
+</template>
+<script>
+import Son from './son.vue'
+export default {
+    components: {
+        Son
+    },
+    data () {
+        return {
+            msg: '给儿子',
+            render () {
+                return `<i-button @click="myfunc">${this.msg}</i-button>`
+            }
+        }
+    },
+    methods: {
+        myfunc () {
+            console.log('老子的函数')
+        }
+    }
+}
+</script>
+```
