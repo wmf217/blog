@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "PowerDesign使用记录"
-subtitle:   " \"基于pagination插件简单的分页\""
+subtitle:   " \"第一次使用PowerDesing详细记录\""
 date:       2017-11-13 19:25:00
 author:     "wmf"
 header-img: "img/post-bg-os-metro.jpg"
@@ -9,7 +9,7 @@ catalog: true
 tags:
     - mysql
     - 软件
-    - PD
+    - PowerDesign
 ---
 ### 1. 导出sql文件
  sql文件只要结构不要数据
