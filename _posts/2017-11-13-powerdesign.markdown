@@ -23,7 +23,7 @@ tags:
 ![](/img/in-post/power-data.png)
 ### 3.画图
 随便画，可以新建项目把数据表复制过来
->去掉背景图中的表格：`Tools -> Display Preferences` Show page delimiter 点掉
+==去掉背景图中的表格==：`Tools -> Display Preferences` Show page delimiter 点掉
 ### 4.显示注释
 [powerdesign 下ER模型中展示数据注释中文列](https://www.cnblogs.com/zh-haining/p/6291750.html)
 ### 5.导出文件
