@@ -16,9 +16,8 @@ tags:
 ##正文
 混合概述：组件使用混合对象时,所有混合对象的选项将被混入该组件本身的选项
 ####直接贴代码
-* 页面窗口代销调整事件
+* 页面窗口代销调整事件 resize.js
 ```js
-// resize.js
 export default {
     mounted () {
         this.$bindResize()
@@ -38,11 +37,9 @@ export default {
         this.$unBindResize()
     }
 }
-
 ```
-* 滑动滑轮事件
+* 滑动滑轮事件 scroll.js
 ```js
- // scroll.js
  export default {
      props: {
          scroller: {
@@ -67,11 +64,9 @@ export default {
          this.$unbindScroll()
      }
  }
-
 ```
-* 一个自开发的边目录混合
+* 一个自开发的边目录混合 dot.js
 ```js
-// dot.js
 import { removeAllClass } from '@/util/assist'
 import scroll from '@/mixins/scroll'
 export default {
@@ -128,7 +123,5 @@ export default {
         }
     }
 }
-
-
 ```
 这个最后一个混合的效果就是文章预览时滑动内容左侧的目录结构随内容而改变，有一个比较特殊的地方是它本身作为混合却可以引用另一个混合`import scroll from '@/mixins/scroll'`,非常喜欢这种写法
