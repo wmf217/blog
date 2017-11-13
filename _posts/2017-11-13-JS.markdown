@@ -13,7 +13,7 @@ tags:
 * @param url: 请求地址，json：请求数据，rows：分页条数，callback: 回调方法
 * 依赖layer,jquery,pagination插件
 * 若使用搜索等功能，需要改变参数，通过json的浅复制实现
-```
+```js
 var DataLists = function (url, json, rows, callback) {
     this.PAGE = 1;
     this.ROW  = rows;
@@ -49,7 +49,7 @@ var DataLists = function (url, json, rows, callback) {
 说明：比较简单的方法,主要使用pagination插件。之前匿名函数的this变化问题使用
 let self = this来解决，新学了bind方法绑定this指向问题
 使用方法：
-```
+```js
 var callback = function () {
     //.....
 }
@@ -57,3 +57,4 @@ var params = {};
 var ACCOUNT = new DataLists(url,params,20,callback); //20条一页
 ACCOUNT.lists(true); //可以使用给默认值为true
 ```
+##end
