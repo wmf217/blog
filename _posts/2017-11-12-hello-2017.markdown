@@ -14,7 +14,7 @@ tags:
 
 ## 前言
 
-WMF 的 Blog 搭建记录。
+James 的 Blog 搭建记录。
 
 [跳过废话，直接看技术实现 ](#build) 
 
