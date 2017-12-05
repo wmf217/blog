@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "基于laravel后台CURD框架"
-subtitle:   " \"比较好的混合写法记录\""
+subtitle:   " \"暂存一部分\""
 date:       2017-12-05 20:10:00
 author:     "wmf"
 header-img: "img/in-post/laravel.jpg"
