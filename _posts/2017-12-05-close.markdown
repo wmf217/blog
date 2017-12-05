@@ -1,10 +1,10 @@
 ---
 layout:     post
 title:      "循环闭包的理解"
-subtitle:   " \"暂存一部分\""
+subtitle:   " \"循环闭包\""
 date:       2017-12-05 21:30:00
 author:     "wmf"
-header-img: "img/in-post/js.jpg"
+header-img: "img/123.jpg"
 catalog: true
 tags:
     - js
