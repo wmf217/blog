@@ -1,0 +1,340 @@
+---
+layout:     post
+title:      "基于laravel后台CURD框架"
+subtitle:   " \"比较好的混合写法记录\""
+date:       2017-11-13 20:10:00
+author:     "wmf"
+header-img: "img/in-post/laravel.jpg"
+catalog: true
+tags:
+    - laravel
+    - php
+---
+
+##前言
+之前在一篇简单CURD基础上编写的代码，可以实现三个view搭建出一个建议的后台，只记录controller层,比较叼的是可以实现关联查询和with查询只要配置即可,操作按钮可以是url/iframe/tree?
+##正文
+配置即一切
+####代码
+```php
+<?php
+namespace App\Http\Controllers;
+use DB;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\View;
+use Redirect;
+use Exception;
+class MixController extends Controller {
+    /**基础配置start**/
+    protected $_model;// 对应的模型
+    protected $_title='';//标题
+    protected $_theRaw=true;//特殊条件
+    protected $_matrix='';//主体
+    protected $_matrix_id='';//主体id
+    protected $_matrix_name='';//主体显示名
+    protected $_handle_btn=[
+        'create'=>['way'=>'nomal','noway'=>'dist','require'=>true],//注意php eval
+        'edit'=>['way'=>'nomal','noway'=>'dist','require'=>true],
+        'destroy'=>['way'=>'nomal','noway'=>'dist','require'=>true],
+        'show'=>['way'=>'disappear','require'=>false]
+    ];//按键权限,操作方式
+    /**基础配置end**/
+
+    /**字段配置start**/
+    protected $_fields_all=[];// 所有的字段
+    protected $_fields_show=[];// 列表页显示的字段
+    protected $_fields_edit=[];// 编辑页面显示的字段
+    protected $_fields_create=[];// 创建页面显示的字段
+    protected $_fields_require=[];//必填字段
+    protected $_lists_related=[];//主页数据关联表字段
+    protected $_fields_related=[];//关联表字段
+    /**字段配置end**/
+
+    /**自定义配置start**/
+    protected $_pic=false;//是否上传图片
+    protected $_data_url='';//自定义路由接口(可省略),避免matrix_id关键字
+    protected $_default_datatable_style=true;//默认datatable风格
+    protected $_js_url=['index'=>false,'create'=>false,'edit'=>false];//自定义js
+    protected $_css_url=['index'=>false,'create'=>false,'edit'=>false];//自定义css
+    protected $_list_buttons=[];//自定义列表操作按钮
+    protected $_buttons=[];//自定义操作按钮(url,ztree,iframe)
+    protected $_tabs=[];//自定义tab(ztree,iframe)
+    /**自定义配置end**/
+    //构造函数
+    public function __construct()
+    {
+        $route = Route::currentRouteAction();
+        list($this->_controller, $action) = explode('@', $route);
+        $this->_controller = str_replace("App\Http\Controllers\\","",$this->_controller);
+        $this->_model_path = "App\Models\\".$this->_model;
+        View::share('controller', $this->_controller);
+        View::share('modelname',$this->_model);
+        View::share('js_url',$this->_js_url);
+        View::share('title',$this->_title);
+        View::share('matrix',$this->_matrix);
+        View::share('input', Input::all());
+    }
+
+    public function index($matrix_id)
+    {
+        $model=$this->mx_builder($matrix_id);
+        if(!$model) $model = new $this->_model_path;
+        $builder = $model->orderBy('id', 'desc');
+
+        $input = Input::all();
+        foreach ($input as $field => $value) {
+             if (empty($value)) {
+                  continue;
+             }
+             if (!isset($this->_fields_all[$field])) {
+                  continue;
+             }
+             $search = $this->_fields_all[$field];
+             $builder->whereRaw($search['search'], [$value]);
+        }
+
+        $builder->whereRaw($this->_theRaw);
+
+        $models = $builder->paginate(10);
+
+        $fields_show = array();
+        foreach ($this->_fields_show as $field) {
+            $fields_show[$field] = $this->_fields_all[$field];
+        }
+
+        return View::make('back.mix.index', [
+             'models' => $models, 'matrix_id'=>$matrix_id, 'fields_show'=>$fields_show, 'handle_btn'=>$this->_handle_btn,
+             'list_buttons' => $this->_list_buttons, 'matrixname' => $this->_matrix_name
+        ]);
+        // $transfer=Input::get('transfer');//扩展路由
+        // if($transfer){
+        //     switch ($transfer) {
+        //         case 'lists':
+        //         return $this->ajaxLists($matrix_id);
+        //         break;
+        //         default:break;
+        //     }
+        // }
+        // //主显示函数
+        // $fields_show = array();
+        // foreach ($this->_fields_show as $field) {
+        //     $fields_show[$field] = $this->_fields_all[$field];
+        // }
+        // return View::make('backend.manager.mix.index', [
+        //     'data_url'=>$this->_data_url,'default_datatable_style'=>$this->_default_datatable_style,
+        //     'handle_btn'=>$this->_handle_btn,'buttons'=>$this->_buttons,
+        //     'fields_show'=>$fields_show,'matrix_id'=>$matrix_id
+        // ]);
+    }
+    public function show(){
+        echo "this is a show";
+    }
+    public function create($matrix_id)
+    {
+        $fields_require = array();
+        foreach ($this->_fields_require as $field) {
+            $fields_require[$field] = $this->_fields_all[$field];
+        }
+        $fields_create = array();
+        foreach ($this->_fields_create as $field) {
+            $fields_create[$field] = $this->_fields_all[$field];
+        }
+        $tabs=$this->_tabs;
+        $pic=$this->_pic;
+        return View::make('back.mix.create', compact('matrix_id','tabs',
+        'fields_create','matrix_id','fields_require','pic'));
+    }
+
+    public function store($matrix_id)
+    {
+        try{
+            DB::beginTransaction();
+            $this->_matrix_id=$matrix_id;
+            $model = new $this->_model_path;
+            $model->fill(Input::all());
+            $re=$this->beforestore($model);
+            if(!$re['status'])throw new Exception($re['err']);
+            $mx_builder=$this->mx_builder($matrix_id);
+            if($mx_builder){
+                $mx_builder->save($model);
+            }else{
+                $model->save();
+            }
+            $this->relate($model);//关联
+            $re=$this->afterstore($model);//回调
+            if(!$re['status'])throw new Exception($re['err']);
+            DB::commit();
+            return Redirect::to(action($this->_controller . '@index',$matrix_id));
+        }catch (\Exception $e) {
+            DB::rollback();
+            return $this->showError($e->getMessage());
+        }
+    }
+
+    public function edit($matrix_id, $id)
+    {
+        $fields_require = array();
+        foreach ($this->_fields_require as $field) {
+            $fields_require[$field] = $this->_fields_all[$field];
+        }
+        $fields_edit = array();
+        foreach ($this->_fields_edit as $field) {
+            $fields_edit[$field] = $this->_fields_all[$field];
+        }
+        $tabs=$this->_tabs;
+        $pic=$this->_pic;
+        $builder = new $this->_model_path;
+        $model = $builder->find($id);
+        foreach($tabs as $k => $tab){//关联关系
+            if($tab['way']=='ztree'){
+            $tabs[$k]['ids']=$model->$tab['name']->lists('id');
+            }
+        }
+        return View::make('back.mix.edit', compact('model','matrix_id','tabs',
+        'fields_require','fields_edit','matrix_id','pic'));
+    }
+
+    public function update($matrix_id,$id)
+    {
+        try{
+            DB::beginTransaction();
+            $this->_matrix_id=$matrix_id;
+            $model = new $this->_model_path;
+            $model = $model->find($id);
+            $model->fill(Input::all());
+            $re=$this->beforeupdate($model);
+            if(!$re['status'])throw new Exception($re['err']);
+            $model->save();
+            $this->relate($model);//关联
+            $re=$this->afterupdate($model);
+            if(!$re['status'])throw new Exception($re['err']);
+            DB::commit();
+            return Redirect::to(action($this->_controller . '@index',$matrix_id));
+        }catch (Exception $e) {
+            DB::rollback();
+            return $this->showError($e->getMessage());
+        }
+    }
+
+    public function destroy($matrix_id,$id)
+    {//异步
+        try{
+            DB::beginTransaction();
+            $this->_matrix_id=$matrix_id;
+            $model = new $this->_model_path;
+            $model = $model->find($id);
+            $re=$this->beforedestroy($model);
+            if(!$re['status'])throw new Exception($re['err']);
+            //删除模式 nomal(删除数据和关联) destroy(只删除数据) detach(只删除关联)
+            switch (Input::get('way')) {
+                case 'destroy':
+                    $this->unrelate($model);//取消非主体其他关联
+                    $model->delete();
+                    break;
+                case 'detach':
+                    $mx_builder=$this->mx_builder($matrix_id);
+                    if($mx_builder){
+                        $mx_builder->detach($model->id);
+                    }
+                    break;
+                default://nomal
+                    // $mx_builder=$this->mx_builder($matrix_id);
+                    // if($mx_builder){
+                    //     $mx_builder->detach($model->id);
+                    // }
+                    // todo
+                    $this->unrelate($model);//取消非主体其他关联
+                    $model->delete();
+                    break;
+            }
+            $re=$this->afterdestroy($model);
+            if(!$re['status'])throw new Exception($re['err']);
+            DB::commit();
+            return $this->showAjaxData("删除成功");
+        }catch (Exception $e) {
+            Log::info($e->getMessage());
+            DB::rollback();
+            return $this->showAjaxError($e->getMessage());
+        }
+    }
+    public function getWith(){
+        $result=[];
+        foreach ($this->_lists_related as $key => $value) {
+            $re=[];
+            foreach ($value as  $v) {
+                $re[]=$v;
+            }
+            $result[$key]=function($query)use($re){$query->select($re);};
+        }
+        return $result;
+    }
+    private function relate(&$model){//保存关联
+       foreach ($this->_fields_related as $field) {
+           if(Input::get($field)){
+            $Rids=is_array(Input::get($field))?implode(',',Input::get($field)):Input::get($field);
+            // $this->putRelTableData($Rids,$this->_model,$model->id,$field);//删除原来关联
+           }
+       }
+    }
+    private function ajaxLists($matrix_id){
+            $model=$this->mx_builder($matrix_id);
+            if(!$model){
+                $model = new $this->_model_path;
+            }
+            $table=strtolower($this->_model).'s';//表名
+            $builder = $model->orderBy($table.'.id','desc');//倒叙?有疑问，为什么去掉下面那句不生效
+            //with关联查询
+            $builder->with($this->getWith());
+            // $builder->with(array('User'=>function($query){$query->select('userrealname','id');}));
+            $builder->whereRaw($this->_theRaw);
+            $orWhere = $this->_fields_show;//搜索有大问题
+            return $this->paging($builder,$orWhere,["id","desc"]);
+    }
+    private function unrelate(&$model){//删除关联
+       foreach ($this->_fields_related as $field) {
+           $model->$field()->detach();
+       }
+    }
+    private function mx_builder($matrix_id){//进一步包装,对用户的主体操作
+        if($this->_matrix){//有主体
+            if($this->_matrix=='User'){//用户主体
+                // if(Auth::user()->role==Config::get('constants.ROLER.ADMIN.roleid')){//管理员
+                //     $mx_builder=0;
+                // }else{//普通用户
+                //     $matrix_id=Auth::user()->id;
+                //     $mx_builder=$this->m_builder($matrix_id);
+                // }
+                //todo
+            }else{//普通主体
+            $mx_builder=$this->m_builder($matrix_id);//保存关联
+            }
+        }else{
+            $mx_builder=0;
+        }
+        return $mx_builder;
+    }
+    private function m_builder($matrix_id){//主体关联builder
+        $func=$this->_model.'s';//规范s定义关联
+        $matrix_path = 'App\Models\\'.$this->_matrix;
+        $main = new $matrix_path;
+        $ORM=$main->find($matrix_id);
+        if ($this->_matrix_name) {
+            $key = $this->_matrix_name;
+            $this->_matrix_name = $ORM->$key;
+            // View::share('matrixname',$ORM->$this->_matrix_name);
+        }
+        $builder=$ORM->$func();
+        return $builder;
+    }
+    public function beforestore(&$model){return $this->showAjaxData('');}//保存前执行函数
+    public function afterstore(&$model) {return $this->showAjaxData('');}//保存回调函数
+    public function beforeupdate(&$model) {return $this->showAjaxData('');}//编辑前执行函数
+    public function afterupdate(&$model) {return $this->showAjaxData('');}//编辑回调函数
+    public function beforedestroy(&$model) {return $this->showAjaxData('');}//删除前执行函数
+    public function afterdestroy(&$model) {return $this->showAjaxData('');}//删除回调函数
+}
+
+```
