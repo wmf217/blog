@@ -2,7 +2,7 @@
 layout:     post
 title:      "自封装简单分页方法"
 subtitle:   " \"基于pagination插件简单的分页\""
-date:       2017-11-12 19:25:00
+date:       2017-11-20 19:25:00
 author:     "wmf"
 header-img: "img/post-bg-js-version.jpg"
 catalog: true
