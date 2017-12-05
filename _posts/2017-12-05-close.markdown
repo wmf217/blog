@@ -1,0 +1,90 @@
+---
+layout:     post
+title:      "循环闭包的理解"
+subtitle:   " \"暂存一部分\""
+date:       2017-12-05 21:30:00
+author:     "wmf"
+header-img: "img/in-post/js.jpg"
+catalog: true
+tags:
+    - js
+---
+
+##正文
+***
+###闭包
+闭包是指有权访问另一个函数作用域中的变量的函数(J高),如函数：
+```js
+var z = 1
+function a (x) {
+    return function (y) {
+        return x+y+z;
+    }
+}
+var b = a(2);
+var c = b(3);
+console.log(c);
+```
+* a方法返回值是一个匿名函数，把匿名函数赋予变量b,这是变量b中保存的就是该匿名函数的一个引用，执行```b(1)```返回x+y+z也就是6
+* 代码中a返回的匿名函数的作用域链包含了a的活动对象以及全局对象，所以在匿名函数中可以正常调用变量x
+* 由于z属于全局变量，只有在全局出栈也就是代码结束时才会被内存释放，所有z在匿名中一定是可以被访问的，x属于局部变量，正常情况下应该在a函数出栈时立即释放，但由于返回的匿名函数的作用域链包含了a的活动变量，所以在a出栈时变量x不会被内存释放，就形成了一个闭包，若果想要释放变量x,需要继续执行```b=null```解除对该函数的引用，相当于通知垃圾回收机制将其清除
+***
+###闭包所保存的是是整个变量对象，而不是某个特殊变量
+```js
+function create () {
+    var re = [];
+    for (var i=0; i<10; i++) {
+        re[i] = function () {
+            return i;
+        }
+    }
+    return re;
+}
+var res = create();
+console.log(res[1]()); //10
+console.log(res[5]()); //10
+console.log(res[9]()); //10
+```
+* 结果返回的所有函数运行的结果都是10,i变量没有在create出栈时立即释放，而是保存在内存中，当这些方法执行时访问的i都是同一i变量，而在这些方法执行时，i中保存的是数字10(这里有一点比较容易搞乱，为什么re的key值保存的是1,2,3,4....,因为它特么执行了)
+* 此时可以通过创建另一个匿名函数强制让闭包行为符合预期(J高)
+```js
+function create () {
+    var re = [];
+    for (var i=1; i<=10; i++) {
+        re[i] = (function (num){
+            return function () {
+                return num;
+            }
+        })(i)
+    }
+    return re;
+}
+var res = create();
+console.log(res[1]()); //1
+console.log(res[5]()); //5
+console.log(res[9]()); //9
+```
+* 这时i这个变量由于create上下文执行时执行，所以执行阶段对应的值为1,2,3,4....,将这些值依次给另一匿名函数做参数，赋值给了num,返回num依然是上级函数的变量，实际也是一个闭包，但返回的这函数res[1],res[2],res[3]....,这些函数的作用域链指向十个不同的变量对象,这些变量对象的值互不干扰。因此返回结果1,2,3,4....10
+***
+###es6
+* es6有了块级作用域的概念，稍作修改
+```js
+function create () {
+    let re = [];
+    for (let i=1; i<=10; i++) {
+        re[i] = function () {
+            return i;
+        }
+    }
+    return re;
+}
+let res = create();
+console.log(res[1]()); //1
+console.log(res[5]()); //5
+console.log(res[9]()); //9
+```
+* 这是返回的函数作用域链保存的变量对象虽然一样，但由于let声明的变量仅在块级作用域内有效,返回的i相当于指向了同一个变量对象中的十个不同变量(todo)
+
+
+
+
