@@ -1,0 +1,23 @@
+---
+layout:     post
+title:      "原型中引用类型属性的共享"
+subtitle:   " \"原型\""
+date:       2017-12-24 20:10:00
+author:     "wmf"
+header-img: "img/in-post/vue.jpg"
+catalog: true
+tags:
+    - js
+---
+
+##前言
+这篇文章探究一下子类对象修改原型属性事件
+##正文
+首先建立一个父类
+```js
+var Person = function () {}
+Person.prototype = {
+    this.age = 18, //年龄，基本类型
+    this.home = ['天津','北京'] //居住地，引用类型
+}
+```
