@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "原型中引用类型属性的共享"
+title:      "JS原型链继承方式"
 subtitle:   " \"原型\""
 date:       2017-12-24 20:10:00
 author:     "wmf"
@@ -8,16 +8,75 @@ header-img: "img/in-post/vue.jpg"
 catalog: true
 tags:
     - js
+    - 面向对象
 ---
 
 ##前言
-这篇文章探究一下子类对象修改原型属性事件
+这篇文章记录一下继承：第一种原型继承
 ##正文
-首先建立一个父类
+#### 首先建立一个父类
 ```js
-var Person = function () {}
+var Person = function (sex) {
+    this.sex = sex;
+};
 Person.prototype = {
-    this.age = 18, //年龄，基本类型
-    this.home = ['天津','北京'] //居住地，引用类型
-}
+    age: 18, //年龄，基本类型
+    live: ['天津','北京'] //居住地，引用类型
+};
 ```
+#### 使用原型链继承
+```js
+var Man = function (name) {
+    this.name = 'Mr ' + name
+};
+Man.prototype = new Person('man'); //并传参，确定该子类的性别
+var Women = function (name) {
+    this.name = 'Ms ' + name;
+    // this.prototype = new Person('women'); //错误的写法，导致一个问题，创建子类实例的同时无法向父类构造函数传值
+};
+Women.prototype = new Person('women'); //并传参，确定该子类的性别
+```
+** 以上代码创建了两个子类，一个women,一个man,都使用原型继承方法继承了Person类 **
+#### 实例化子类
+```js
+var wmf = new Man('wmf');
+var zhy = new Women('zhy');
+console.log(wmf instanceof Man);//true ，wmf属于子类的实例
+console.log(wmf instanceof Women);//false
+console.log(wmf instanceof Person);//true，wmf也属于父类的实例
+```
+** 子类的实例同时也属于父类的实例 **
+#### 输出显示
+```js
+console.log(wmf.name,wmf.sex,wmf.age,wmf.live);//Mr wmf man 18 (2) ["天津", "北京"]
+console.log(zhy.name,zhy.sex,zhy.age,zhy.live);//Ms zhy women 18 (2) ["天津", "北京"]
+```
+#### 父类原型增加方法
+```js
+Person.prototype.grow = function () { //父类新增方法
+    this.age = this.age + 1;
+};
+wmf.grow(); //父类新增方法可以访问到
+console.log(wmf.name,wmf.sex,wmf.age,wmf.live);//Mr wmf man 19 (2) ["天津", "北京"]
+console.log(zhy.name,zhy.sex,zhy.age,zhy.live);//Ms zhy women 18 (2) ["天津", "北京"]
+```
+** 可以看到子类实例可以正常访问父类的新增方法，该方法修改的是基本类型age，虽然父类存在age属性，单实例化修改的属性是子类实例的age，并不修改父类原型的值 **
+#### 原型中引用类型属性的共享
+父类中定义的live属性为引用类型
+当子类实例整体修改它的时候：
+```js
+wmf.live = ['天津','大连'];
+console.log(wmf.live,zhy.live); //(2) ["天津", "大连"] (2) ["天津", "北京"]
+```
+** 此时与原型无关，相当于子类实例新增属性live **
+![](/img/in-post/proto.png)
+但如果重新执行
+```js
+wmf.live[1] = '大连';
+console.log(wmf.live,zhy.live); //(2) ["天津", "大连"] (2) ["天津", "大连"]
+```
+** 这既是原型中引用类型属性的共享，此时的赋值并没有报错```Cannot set property '1' of undefined```,而是查找原型链找到父类的live属性，并修改原型的值，这样造成所有实例的值都跟着改变了 **
+
+## 总结
+这种方法简单，但存在无法为父类构造传参的缺陷，且原型引用类型属性的共享是不希望得到的结果。因此，下一篇文章介绍其它方法
+
