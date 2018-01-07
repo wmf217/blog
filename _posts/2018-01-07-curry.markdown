@@ -1,0 +1,37 @@
+---
+layout:     post
+title:      "JS原型链继承方式"
+subtitle:   " \"原型\""
+date:       2018-01-07 16:16:00
+author:     "wmf"
+header-img: "img/in-post/vue.jpg"
+catalog: true
+tags:
+    - js
+---
+
+##前言
+感觉柯里化真实项目中用到的几率并不大，不过最近总是可已看到各种柯里化的介绍文章，今天记录一下
+##正文
+#### 柯里化的应用场景
+假设有一个数组，要对其中每一个元素进行同样操作，比如加一或加二
+```js
+const arr1 = [0, 1, 2, 3];
+let   arr2 = arr1.map(e => e+1); //加一
+let   arr3 = arr1.map(e => e+2); //加二
+```
+那么是根据情况加不同的值，又不依赖全局变量，怎么处理，于是想把map里的1，2变成参数，但是通过map无法传递该参数，以下一个简单写法
+```js
+let   func = function (arr) {
+    arr
+}
+const arr1 = [0, 1, 2, 3];
+let   arr2 = arr1.map(e => e+1); //加一
+```
+
+#### 使用原型链继承
+
+
+## 总结
+未完被打断
+
