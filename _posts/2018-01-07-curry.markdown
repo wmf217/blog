@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "JS原型链继承方式"
+title:      "JS柯里化"
 subtitle:   " \"原型\""
 date:       2018-01-07 16:16:00
 author:     "wmf"
