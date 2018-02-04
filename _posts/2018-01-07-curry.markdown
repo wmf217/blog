@@ -68,6 +68,44 @@ collect(1.5);
 console.log(collect());             //3.5
 ```
 这不是一个真正柯里化，这段代码是为了帮助理解柯里化延迟计算的思想
+#### 柯里化实现
+目标：把类似```collect(1,2,3,4)```的方法按```collect(1)(2)(3)(4)```方式执行，其实个人很像php各种框架里的builder,builder的实现首先就是要有一个私有的变量来保存各条件， 在js里就相应的使用闭包来模拟私有变量存储这些参数
+以下一段网上柯里化通用的方法
+```js
+var curry = function (fn) {
+    var _args = [];                  //存储参数待执行
+    return function () {
+        if (arguments.length === 0) {
+            return fn.apply(this, _args);
+        }
+        Array.prototype.push.apply(_args, Array.prototype.slice.call(arguments));
+        return arguments.callee;    //返回匿名函数
+    }
+};
+var collect = function () {
+    var total = 0;
+    for (var i = 0, c; c = arguments[i++];) {
+        total += c;
+    }
+    console.log(total);
+}
+```
+```js
+var bulider =  curry(collect);     //来个类似builder的写法
+bulider = bulider(1);
+bulider = bulider(1,2);
+bulider = bulider(3);
+bulider();    //7
+var collect2 = curry(collect);
+collect2(1)(2)(3)(); //6
+```
+#### 柯里化的好处
+1. 参数复用；
+2. 提前返回；
+3. 延迟计算/运行
+以后再分析
+###### todo
+js 箭头函数使用不了arguments,也没有this，找时间分析下
 ## 总结
-未完被打断
+正儿八经的觉得实际项目中很难用到，无聊先码上
 
