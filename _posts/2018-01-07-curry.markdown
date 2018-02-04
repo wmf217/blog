@@ -4,7 +4,7 @@ title:      "JS柯里化"
 subtitle:   " \"柯里化\""
 date:       2018-01-07 16:16:00
 author:     "wmf"
-header-img: "img/in-post/comm.jpg"
+header-img: "img/in-post/comm2.jpg"
 catalog: true
 tags:
     - js
