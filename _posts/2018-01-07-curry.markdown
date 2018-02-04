@@ -11,7 +11,7 @@ tags:
 ---
 
 ##前言
-感觉柯里化真实项目中用到的几率并不大，不过最近总是可已看到各种柯里化的介绍文章，今天记录一下
+柯里化（Currying），又称部分求值（Partial Evaluation），是把接受多个参数的函数变换成接受一个单一参数（最初函数的第一个参数）的函数，并且返回接受余下的参数而且返回结果的新函数的技术
 ##正文
 #### 柯里化的应用场景
 假设有一个数组，要对其中每一个元素进行同样操作，比如加一或加二
@@ -20,18 +20,28 @@ const arr1 = [0, 1, 2, 3];
 let   arr2 = arr1.map(e => e+1); //加一
 let   arr3 = arr1.map(e => e+2); //加二
 ```
-那么是根据情况加不同的值，又不依赖全局变量，怎么处理，于是想把map里的1，2变成参数，但是通过map无法传递该参数，以下一个简单写法
+那么是根据情况加不同的值，又不依赖全局变量，怎么处理，于是想把map里的1，2变成参数，但是通过map无法传递该参数，以下一个普通简单写法
 ```js
-let   func = function (arr) {
-    arr
+let func = function (arr,add) {
+    arr = arr.map(e => e + add)
+    return arr;
 }
 const arr1 = [0, 1, 2, 3];
-let   arr2 = arr1.map(e => e+1); //加一
+let arr2 = func(arr1,3);
 ```
+柯里化就是下面
 
-#### 使用原型链继承
-
-
+```js
+let func = function (arr) {
+    return function (add) {
+        let arr_add = arr.map(e => e + add)
+        return arr_add;
+    }
+}
+const arr1 = [0, 1, 2, 3];
+let arr2 = func(arr1)(3);
+```
+这是一种简单的柯里化，上面的func方法相当于是一个函数工厂，返回的是一个函数，也可以直接```func2 = func(arr1)```,后面在灵活的根据某个值n执行```func2(n)```来返回想要的数组
 ## 总结
 未完被打断
 
