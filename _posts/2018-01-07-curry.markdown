@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "JS柯里化"
-subtitle:   " \"原型\""
+subtitle:   " \"柯里化\""
 date:       2018-01-07 16:16:00
 author:     "wmf"
 header-img: "img/in-post/vue.jpg"
@@ -13,7 +13,7 @@ tags:
 ## 前言
 柯里化（Currying），又称部分求值（Partial Evaluation），是把接受多个参数的函数变换成接受一个单一参数（最初函数的第一个参数）的函数，并且返回接受余下的参数而且返回结果的新函数的技术
 ## 正文
-#### 柯里化的应用场景
+#### 简单柯里化
 假设有一个数组，要对其中每一个元素进行同样操作，比如加一或加二
 ```js
 const arr1 = [0, 1, 2, 3];
@@ -42,6 +42,32 @@ const arr1 = [0, 1, 2, 3];
 let arr2 = func(arr1)(3);
 ```
 这是一种简单的柯里化，上面的func方法相当于是一个函数工厂，返回的是一个函数，也可以直接```func2 = func(arr1)```,后面在灵活的根据某个值n执行```func2(n)```来返回想要的数组
+#### 柯里化思想
+柯里化部分求值，也就是延迟求值，等到需要的时候再求值
+比如说要做累加，使用一个很简单的全局变量就可以实现，有一个专门的方法把传参加到全局变量上，但这样做当数据量很大时会很耗费资源，所以可以使用一个方法吧这些临时值先全部收集起来，等到我们想要实现运算的时候再取执行运算
+比如说这样：
+```js
+let collect = (() => {
+    let arr = [];                     //做一个闭包来存储值
+    return function () {
+        if (arguments.length === 0) { //开始计算
+            let count = 0;
+            arr.forEach((v, k)=>{
+                count += v;
+            });
+            return count;
+            arr = null;              //无用释放
+        } else {
+            Array.prototype.push.apply(arr,arguments);
+        }
+    }
+})();
+collect(1);
+collect(1);
+collect(1.5);
+console.log(collect());             //3.5
+```
+这不是一个真正柯里化，这段代码是为了帮助理解柯里化延迟计算的思想
 ## 总结
 未完被打断
 
