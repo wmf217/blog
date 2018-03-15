@@ -66,7 +66,7 @@ console.log(a);
 }
 ```
 其中getName是之前通过prototype添加的属性，constructor属性默认指向该构造函数(这个我是暂时用不到)，当然这个对象也是有原型，原型指向一个Object对象(原型链的最顶端)，在实例化a对象时a的原型_proto_指向了该对象，如果再次实例化对象b，那么a,b的原型同时指向该对象。实现了属性的共享。
-这也是为什么之前原型链继承会出现(原型中引用类型属性的共享)
+这也是为什么之前原型链继承会出现(**原型中引用类型属性的共享**)
 #### 原型对象属性共享
 ```js
 var A = function (name) {
@@ -79,6 +79,7 @@ var A = function (name) {
 A.prototype.getOut = function () {
     console.log(this.name);
 };
+A.prototype.age = 18;
 var c1 = new A ('wmf');
 var c2 = new A ('qly');
 A.prototype.getOut = function () {
@@ -87,5 +88,6 @@ A.prototype.getOut = function () {
 c1.getOut(); //[1,2,3]
 c1.getIn();  //[1,2,3]
 ```
+**类的prototype与对象的proto指向同一个对象,也就是这两个属性保存同样的地址**
 
 
