@@ -79,7 +79,6 @@ var A = function (name) {
 A.prototype.getOut = function () {
     console.log(this.name);
 };
-A.prototype.age = 18;
 var c1 = new A ('wmf');
 var c2 = new A ('qly');
 A.prototype.getOut = function () {
