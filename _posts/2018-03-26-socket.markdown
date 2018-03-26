@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      "JS原型和原型链"
-subtitle:   " \"原型\""
-date:       2017-02-24 20:10:00
+title:      "websocket简易实现"
+subtitle:   " \"一个简单例子和理解\""
+date:       2018-03-26 19:26:00
 author:     "wmf"
 header-img: "img/common.jpg"
 catalog: true
