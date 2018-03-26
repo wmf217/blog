@@ -10,16 +10,24 @@ tags:
     - js
     - 面向对象
 ---
-* @param url: 请求地址，json：请求数据，rows：分页条数，callback: 回调方法
-* 依赖layer,jquery,pagination插件
-* 若使用搜索等功能，需要改变参数，通过json的浅复制实现
+### PC版 pagination
 ```js
-var DataLists = function (url, json, rows, callback) {
+/*
+* @author wmf 12.29封装分页列表方法
+* @param url: 请求地址，json：请求数据，rows：分页条数，callback: 回调方法(如果是字符串与template结合)
+* @依赖layer,jquery,pagination插件
+* @若使用搜索等功能，需要改变参数，通过json的浅复制实现
+* @若使用init方法，自动携带搜索,重置功能 需配置search_btn,refresh_btn
+*/
+var DataLists2 = function (url, json, rows, callback,temp) {
     this.PAGE = 1;
     this.ROW  = rows;
     this.URL  = url;
     this.json = json
-    this.callback = callback;
+    this.callback    = callback;
+    this.temp        = temp;
+    this.search_btn  = 'lists_search';
+    this.refresh_btn = 'lists_refresh';
     this.pageSite = function(total) {
         // var self = this;
         $('#page').pagination({
@@ -33,28 +41,170 @@ var DataLists = function (url, json, rows, callback) {
     };
     this.lists = function (sp) { //sp为true重新规划分页，false不重新规划分页
         // var self = this;
-        layer.load(2);
+        if (sp) {
+            this.PAGE = 1;
+        }
+        layer.load(0);
         $.post(this.URL+'&page='+this.PAGE+'&row='+this.ROW, this.json, function (data) {
             layer.closeAll('loading');
             if (sp) {
-                this.pageSite(data.data.count);
+                if (data.data.total>this.ROW) {
+                    $("#page").show();
+                } else {
+                    $("#page").hide();
+                }
+                this.pageSite(data.data.total);
             }
+
+            if (typeof this.temp == "string") { //template.js配合
+                var r  = template.render(this.temp, data.data);
+                $("."+this.temp).html(r);
+            }
+
             if (typeof this.callback == "function") {
                 this.callback(data);
             }
         }.bind(this), 'json');
     };
+    this.listen = function () { //监听事件
+        $("#"+this.search_btn).click(function(){
+            for (var k in this.json)
+            {
+                this.json[k] = $("#"+k).val();
+            }
+            this.lists(true);
+        }.bind(this));
+        $("#"+this.refresh_btn).click(function(){
+            for (var k in this.json)
+            {
+                $("#"+k).val('');
+                this.json[k] = '';
+            }
+            this.lists(true);
+        }.bind(this));
+    }//新加方法，搜索和刷新
+    this.init = function () {
+        this.lists(true);
+        this.listen();
+    };
 }
 ````
-说明：比较简单的方法,主要使用pagination插件。之前匿名函数的this变化问题使用
-let self = this来解决，新学了bind方法绑定this指向问题
-使用方法：
+### 手机版 下拉加载
 ```js
-var callback = function () {
-    //.....
+/*
+* @author wmf 3.15封装分页列表方法(下拉分页)
+* @param url: 请求地址，json：请求数据，rows：分页条数，callback: 回调方法(如果是字符串与template结合)
+* @依赖layer,jquery
+* @若使用init方法，自动携带搜索,重置功能 需配置search_btn,refresh_btn
+*/
+
+var DataTable = function (url, json, rows, temp, callback) {
+    this.PAGE = 1;
+    this.ROW  = rows;
+    this.URL  = url;
+    this.json = json
+    this.callback    = callback;
+    this.temp        = temp?temp:'datatable';
+    this.search_btn  = '#lists_search'; //默认可修改
+    this.refresh_btn = '#lists_refresh';//默认可修改
+    this.hasmore     = true;
+    this.sheet       = false;
+    this.active      = "mui-active";
+    this.loading     = false;
+    this.beforeRender= function (data) {
+        return data;
+    };
 }
-var params = {};
-var ACCOUNT = new DataLists(url,params,20,callback); //20条一页
-ACCOUNT.lists(true); //可以使用给默认值为true
+DataTable.prototype.lists = function (sp) { //sp为true重新规划分页，false不重新规划分页
+    if (sp) {
+        this.PAGE = 1;
+        this.hasmore = true;
+    }
+    var param = {};
+    $.each(this.json,function(k,v){
+        var target = (v!=''&&v)?v:k;
+        if ($("#"+target).val()) {
+            param[k] = $("#"+target).val();
+        }
+    });
+    param.k = getCookie('key');
+    param.u = getCookie('id');
+    layui.use('layer', function() {
+        this.loading = true;
+        setTimeout(function(){
+            if (this.loading) {
+                layui.layer.load(1, {
+                    shade: [0.1,'#fff']
+                });
+            }
+        }.bind(this),100);
+    }.bind(this));
+    $.ajax({
+        type: "POST",
+        url: this.URL+'&page='+this.PAGE+'&row='+this.ROW,
+        dataType: 'json',
+        data: param,
+        success: function (e)
+        {
+            this.loading = false;
+            layui.use('layer', function(){
+                layui.layer.closeAll('loading');
+            });
+            if (e.data.count > e.data.total) {
+                this.hasmore = false;
+            }
+            if (sp) {
+                $("."+this.temp).html("");
+            }
+            if (typeof this.temp == "string") { //template.js配合
+                if ($("."+this.temp).length) {
+                    e.data.toFloat = this.toFloat;
+                    // e.data.window = window;
+                    var r  = template.render(this.temp, this.beforeRender(e.data));
+                    $("."+this.temp).append(r);
+                }
+            }
+    
+            if (typeof this.callback == "function") {
+                this.callback(e);
+            }
+        }.bind(this),
+        error: function (e)
+        {
+            layui.use('layer', function(){
+                layui.layer.closeAll('loading');
+            });
+            console.log(e)
+        }
+    });
+}
+DataTable.prototype.toFloat  = function (num) {
+    var re = window.parseFloat(num).toFixed(2);
+    return re=='NaN'?0:re;
+}
+DataTable.prototype.listen = function () { //监听事件
+    $(this.search_btn).click(function(){
+        this.lists(true);
+    }.bind(this));
+    $(this.refresh_btn).click(function(){
+        $.each(this.json,function(k,v) {
+            var target = (v!=''&&v)?v:k;
+            $("#"+target).val('');
+        });
+        this.lists(true);
+    }.bind(this));
+    $(window).scroll(function () {
+        if ($(window).scrollTop() + $(window).height() > $(document).height() - 1) {
+            if ((!this.sheet||$(this.sheet).hasClass(this.active))&&this.hasmore) {
+                this.PAGE++;
+                this.lists();
+            } 
+        }
+    }.bind(this));
+}
+DataTable.prototype.init = function () {
+    this.lists(true);
+    this.listen();
+}
 ```
 ##end
