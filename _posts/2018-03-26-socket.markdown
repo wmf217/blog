@@ -15,7 +15,7 @@ tags:
 *从网上获取一个例子,肢解代码并简单注释,去掉了debug便于代码清晰*
 ##正文
 #### 服务端
-写一个php后台并运行
+写一个php后台并运行  
 ######1.四句标准写法创建服务端socket
 ```php
 $master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -29,11 +29,11 @@ socket_listen($master, 10);
 //配合后面的方法socket_accept可以返回要来的连接socket
 //Documentation:After the socket socket has been created using socket_create() and bound to a name with socket_bind(), it may be told to listen for incoming connections on socket
 ```
-上面的方法顺利执行则会创建一个服务端的socket，绑定了IP端口并监听
+上面的方法顺利执行则会创建一个服务端的socket，绑定了IP端口并监听  
 ######2.然后把服务器socket存入数组中
 ```php
 $sockets = [$master];
-```
+```  
 ######3.接下来写一个无限循环```while(true)```，循环内部首先是一个重要的方法 
 ```php
 $reads = $sockets;
@@ -49,7 +49,7 @@ The sockets listed in the except array will be watched for exceptions
 最后一个参数代表监视时间，如果设置为NULL，该程序会一直堵塞知道有可读socket出现  
 note:
 You do not need to pass every array to socket_select(). You can leave it out and use an empty array or NULL instead. Also do not forget that those arrays are passed by reference and will be modified after socket_select() returns.
-注意前三个参数为引用传值,所以一但socket_select返回，这三个参数将会被修改，也就是说第一个参数传入的是一个socket集合，当函数结束后，第一个参数变为可读的socket集合
+注意前三个参数为引用传值,所以一但socket_select返回，这三个参数将会被修改，也就是说第一个参数传入的是一个socket集合，当函数结束后，第一个参数变为可读的socket集合  
 ######4.然后循环可读socket
 ```php
 foreach ($reads as $socket)
