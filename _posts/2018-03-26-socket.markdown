@@ -18,16 +18,16 @@ tags:
 写一个php后台并运行  
 ###### 四句标准写法创建服务端socket
 ```php
-$master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-//创建一个服务端socket,AF_INET代表IPV4协议，SOCK_STREAM套接字流，还可以用SOCK_DGRAM,前者TCP流，后者UDP流，SOL_TCP代表TCP协议  
-socket_set_option($master, SOL_SOCKET, SO_REUSEADDR, 1);
+$master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);  
+//创建一个服务端socket,AF_INET代表IPV4协议，SOCK_STREAM套接字流，还可以用SOCK_DGRAM,前者TCP流，后者UDP流，SOL_TCP代表TCP协议    
+socket_set_option($master, SOL_SOCKET, SO_REUSEADDR, 1);  
 //这个函数的作用是设置IP和端口重用,在重启服务器后能重新使用此端口，暂时未尝试不开启的后果    
-socket_bind($master, '127.0.0.1', 2000);
-//将IP和端口绑定在服务器socket上   
+socket_bind($master, '127.0.0.1', 2000);  
+//将IP和端口绑定在服务器socket上  
 socket_listen($master, 10);
-//这句话非常重要，将连接套接口变成被动连接套接口，使一个进程可以被其它进程请求，从而变成一个服务器进程，其中的能存储的请求不明的socket数目
-//配合后面的方法socket_accept可以返回要来的连接socket
-//Documentation:After the socket socket has been created using socket_create() and bound to a name with socket_bind(), it may be told to listen for incoming connections on socket
+//这句话非常重要，将连接套接口变成被动连接套接口，使一个进程可以被其它进程请求，从而变成一个服务器进程，其中的能存储的请求不明的socket数目  
+//配合后面的方法socket_accept可以返回要来的连接socket  
+//Documentation:After the socket socket has been created using socket_create() and bound to a name with socket_bind(), it may be told to listen for incoming connections on socket  
 ```
 上面的方法顺利执行则会创建一个服务端的socket，绑定了IP端口并监听  
 ###### 然后把服务器socket存入数组中
@@ -39,7 +39,7 @@ $sockets = [$master];
 $reads = $sockets;
 socket_select($reads, NULL, NULL, NULL);
 ```
-该函数前三个参数代表可读/可写/异常： 
+该函数前三个参数代表可读/可写/异常：  
 Read:  
 The sockets listed in the read array will be watched to see if characters become available for reading (more precisely, to see if a read will not block - in particular, a socket resource is also ready on end-of-file, in which case a socket_read() will return a zero length string)  
 Write:  
@@ -59,7 +59,7 @@ foreach ($reads as $socket)
 ```php
 if ($socket == $master) {
     $client = socket_accept($master);
-    array_push($sockets, $client);//将返回的客户端socket存入集合去监视
+    array_push($sockets, $client);//将返回的客户端socket存入集合去监视  
 }
 ```
 其中socket_accept接受连接到服务器进程的socket，将返回一个新的socket，如果链接的是队列将返回第一个socket    
@@ -69,17 +69,17 @@ After the socket socket has been created using socket_create(), bound to a name 
 else {
    $bytes = @socket_recv($socket,$buffer,2048,0);//其实就是另外一种写法的socket_read(),和socket_select()一样都是引用传值并修改参数,改方法执行之后第二个参数存储了读取的信息，建立连接时返回的是头部信息，传送数据时返回的是帧
    if ($bytes < 9) {  
-       //debug  
-   }  
-   if (!$handshake) { //handshake 变量初始为false,表示是否握手，多个连接就的用一个数组保存握手状态  
-        handShake($socket, $buffer);//如果没有握手，先握手回应,握手方法比较固定，不做解释  
-        $handshake = true;  
-    } else {  
-        $buffer = decode($buffer); //如果已经握手，直接接受数据，解析帧数据，方法也固定不解释  
-        $buffer = frame($buffer);  //组装帧数据,不解释  
-        socket_write($socket, $buffer, strlen($buffer));//这里收到数据马上把数据原样发回客户端socket  
-    }
-}
+       //debug    
+   }    
+   if (!$handshake) { //handshake 变量初始为false,表示是否握手，多个连接就的用一个数组保存握手状态    
+        handShake($socket, $buffer);//如果没有握手，先握手回应,握手方法比较固定，不做解释    
+        $handshake = true;    
+    } else {   
+        $buffer = decode($buffer); //如果已经握手，直接接受数据，解析帧数据，方法也固定不解释    
+        $buffer = frame($buffer);  //组装帧数据,不解释   
+        socket_write($socket, $buffer, strlen($buffer));//这里收到数据马上把数据原样发回客户端socket     
+    }   
+}  
 ```
 ###### 然后就这么一直循环下去监视可读socket.....
 #### 客户端
@@ -92,5 +92,5 @@ else {
  ws.onerror = function(event){alert("WebSocket异常！");};
  ws.send('好气啊');//发送信息给服务器
 ```
-##总结
+## 总结
 *还有很多地方不理解，未完待续*
