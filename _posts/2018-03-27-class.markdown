@@ -1,0 +1,74 @@
+---
+layout:     post
+title:      "JavaScript 的继承"
+subtitle:   " \"fuck the idiot\""
+date:       2018-03-26 19:28:00
+author:     "wmf"
+header-img: "img/common.jpg"
+catalog: true
+tags:
+    - js
+    - 面向对象
+---
+## 前言
+## 正文  
+##### 1.原型链继承法
+把父类的对象赋值给子类的原型
+```js
+var Person = function (name) {
+    this.name = name;
+    this.age  = 18;
+}
+Person.prototype.getAge = function () {
+    console.log(this.age);
+}
+```
+prototype: Person作为构造函数有一个prototype属性，再第二句代码之前，Person的prototype属性指向一个对象只有两个属性，constructors属性指向构造函数本身,__proto__属性指向基础Object
+```js
+{
+    constructor: function () {
+        ......
+    },
+    _proto_: Object
+}
+```
+第二句给该对象新增getAge属性，当实例化Person成为对象时，对象的__proto__同样指向构造函数prototype指向的方法
+```js
+var Man = function (sex) { //创建一个子类
+    this.sex = sex;
+}
+```
+Man作为构造函数同样拥有prototype属性，为实现继承将该属性指向父类的一个实例(对象)
+```js
+Man.prototype = new Person ();
+```
+注意这里赋值时Man.prototype原有的属性constructor已经不在了，犹豫Person的对象本身具有__proto__,因此相当于重新生成了__proto__的__proto__属性，这就是原型链继承方法，这时实例化Man对象
+```js
+var man = new Man();
+```
+该对象的__proto__指向Person的一个实例(原型链中可以找到name,age属性)，该实例的__proto__指向Person.prototype指向的对象(原型链中可以找到getAge属性)，实现了继承  
+***缺陷：1.子类无法通过父类创建私有属性，2.[原型中引用类型属性的共享](http://www.mingf.wang/2017/12/24/proto/)***
+```sequence
+Title:man的原型链
+man(sex)->new Person(name age): __proto__
+new Person(name age)->Person.prototype(getAge): __proto__
+Person.prototype(getAge)->Object: __proto__
+```
+---
+##### 2.调用构造函法
+```js
+var Man = function (sex,name) { //创建一个子类
+    this.sex = sex;
+	Person.apply(this,arguments);
+}
+var man = new Man ('male','wmf');
+```
+这种方式解决了一个问题，每一个实例化的对象都拥有自己的age和name属性，如果有引用类型属性，每个对象的属性也不会共享，但缺点非常明显，调用```man.getAge()```会报错，找不到该方法，对象man对象的__proto__只是指向一个基础的prototype(只有constructor和指向Object的__proto__)
+***缺陷：子类无法继承父类的prototype的属性***
+##### 3.组合继承法
+以上的两种方法各有缺点，但可以互相补充，所以就有了组合继承法，再第二中方法的基础上执行
+```js
+Man.prototype = new Person ();
+```
+这时对象man既有了属于自己的age和name属性，又有了getAge属性，而且由于getAge为引用类型，对象之间的该属性是可共享的，但问题是此时man对象相当于拥有两套age和name属性，只不过通过构造函数执行覆盖了__proto__中的name和age
+***缺陷：父类的构造函数属性在子类原型链中重复冗余***

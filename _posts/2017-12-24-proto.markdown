@@ -61,7 +61,7 @@ console.log(wmf.name,wmf.sex,wmf.age,wmf.live);//Mr wmf man 19 (2) ["天津", "�
 console.log(zhy.name,zhy.sex,zhy.age,zhy.live);//Ms zhy women 18 (2) ["天津", "北京"]
 ```
 ** 可以看到子类实例可以正常访问父类的新增方法，该方法修改的是基本类型age，虽然父类存在age属性，单实例化修改的属性是子类实例的age，并不修改父类原型的值 **
-#### 原型中引用类型属性的共享
+####
 父类中定义的live属性为引用类型
 当子类实例整体修改它的时候：
 ```js
