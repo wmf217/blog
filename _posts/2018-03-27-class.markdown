@@ -81,4 +81,22 @@ Man.prototype = Person.prototype;
 ```js
 Man.prototype = Object.create(Person.prototype);
 ```
-试了一下暂时没什么区别，所以第四种方法应该是最佳方法
+试了一下暂时没什么区别，第二种方法多了一层空__proto__，没具体尝试区别
+最终写法
+```js
+var Person = function (name) {
+    this.name = name;
+    this.age  = 18;
+}
+
+Person.prototype.getAge = function () {
+    console.log(this.age);
+}
+var Man = function (sex,name) { //创建一个子类
+    this.sex = sex;
+	Person.apply(this,arguments);
+}
+Man.prototype = Object.create(Person.prototype);
+var man = new Man ('male','wmf');
+console.log(man);
+```
