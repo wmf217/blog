@@ -81,7 +81,7 @@ Man.prototype = Person.prototype;
 ```js
 Man.prototype = Object.create(Person.prototype);
 ```
-试了一下暂时没什么区别，第二种方法多了一层空__proto__，没具体尝试区别
+Object.create()方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__,试了一下暂时没什么区别，第二种方法多了一层空__proto__，没具体尝试区别
 最终写法
 ```js
 var Person = function (name) {
