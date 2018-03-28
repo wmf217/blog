@@ -72,3 +72,13 @@ Man.prototype = new Person ();
 ```
 这时对象man既有了属于自己的age和name属性，又有了getAge属性，而且由于getAge为引用类型，对象之间的该属性是可共享的，但问题是此时man对象相当于拥有两套age和name属性，只不过通过构造函数执行覆盖了__proto__中的name和age
 ***缺陷：父类的构造函数属性在子类原型链中重复冗余***
+##### 4.寄生组合法
+只要把3中代码修改一下
+```js
+Man.prototype = Person.prototype;
+```
+这时对象man既有了属于自己的age和name属性，__proto__直接指向父级得Person的prototype，所有问题就解决了，但是一般写法为
+```js
+Man.prototype = Object.create(Person.prototype);
+```
+试了一下暂时没什么区别，所以第四种方法应该是最佳方法
