@@ -1,0 +1,562 @@
+---
+layout:     post
+title:      "css基础"
+subtitle:   " \"编辑器配合预览查看效果好\""
+date:       2018-07-20 19:28:00
+author:     "wmf"
+header-img: "img/common.jpg"
+catalog: true
+tags:
+    - css
+---
+## 正文  
+#####background
+  background-color: <div style="background-color:red">背景颜色</div>
+  background-image: 背景图片
+  background-repeat: 背景重复
+  background-position: 背景位置
+  background-attachment: 背景滚动(默认scoll,不滚动fixed)
+#####text
+  color: 
+   <span style="color:green;">字体颜色</span>
+  background-color: <span style="background-color:red;">加背景颜色</span>
+  letter-spacing: <span style="letter-spacing:10px;">字符间距</span>
+  line-height: <p style="line-height:200%">行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距行间距</p>
+  text-align:(center/left/right)
+  <p style="text-align:center;">对齐文本</p>
+  text-decoration: (line-through/overline/underline/none)<p style=" text-decoration:line-through;">修饰文本</p>
+  text-indent:(cm)
+  <p style="text-indent:1cm;">
+  缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本缩进文本
+  </p>
+  text-transform: 
+  <span style="text-transform:uppercase">全部转大写 abCd efG</span>
+  <span style="text-transform:lowercase">全部转大写 abCd efG</span>
+  <span style="text-transform:capitalize;">首字母大写,其它不变 abCd efG</span>
+  white-space:
+  <span style="white-space:nowrap">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>
+  word-spacing:
+  <span style="word-spacing:10px;">字符 间 距 my name is james</span>
+#####font
+  font-family/font-size/font-weight:
+  <span style="font-family:Arial,Verdana,Sans-serif;font-size:200%;font-weight:bold">字体和字体大小This is a paragraph, shown in the Times New Roman font.</span>
+  <span style="font-family:'Times New Roman',Georgia,Serif;font-size:50%;">字体和字体大小This is a paragraph, shown in the Arial font</span>
+  font-style:(normal/italic/oblique)
+  <span style="font-style:italic;">字体的风格</span>
+  font: <span style="font:bold italic 12px/30px arial,sans-serif">统一声明</span>
+#####border
+  border-style: (solid/inset/outset/ridge...)
+  <span style="border-style:solid">边框样式</span>
+  <p style="border-style:double solid">边框样式</p>
+  <div style="border-style:solid">边框样式</div>
+  border-width/border-color:
+  <span style="border-style:solid;border-width:5px;border-color:blue">边框粗细和颜色</span>
+  border-left-color:
+  <span style="border:solid 5px blue;border-left-color:red;">单独设置左边框</span>
+#####margin
+  margin-left:
+  <p style="margin-left:10px;">这个段落带有指定的左外边距。</p>
+  <p style="margin:20px;2px;10px;18px">这个段落带有指定的所有边距。</p>
+#####padding
+  <span style="padding-left:10cm;border:solid 5px yellow;">左侧内边距</span>
+  <p style="padding-right:16px;border:solid 5px yellow;">右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距右侧侧内边距</p>
+#####list
+  list-style-type: (none/circle/square/disc/decimal/lower-alpha)
+  <ul style="list-style-type:circle;"><li>列表标记</li><li>列表标记</li><li>列表标记</li><li>列表标记</li></ul>
+  list-style-position: inside outside
+  <ul style="list-style-type:circle;list-style-position:inside"><li>列表标记</li><li>列表标记</li><li>列表标记</li><li>列表标记</li></ul>
+  <ul style="list-style-type:disc;list-style-position:outside"><li>列表标记</li><li>列表标记</li><li>列表标记</li><li>列表标记</li></ul>
+  list-style: 
+  <ul style="list-style:square outside;"><li>列表标记</li><li>列表标记</li><li>列表标记</li><li>列表标记</li></ul>
+#####table
+  table-layout: (automatic/fixed)<span style="color:red;text-decoration:line-through">:markdown中效果消失</span>
+  <table style="table-layout: automatic;" border="1" width="100%">
+        <tr>
+        <td width="50%">表格布局</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%">100</td>
+        </tr>
+  </table>
+  <table style="table-layout: fixed" border="1" width="100%">
+        <tr>
+        <td width="50%">表格布局</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%">100</td>
+        </tr>
+  </table>
+  border-collapse:(separate/collapse)
+  <table style="table-layout: automatic;border-collapse:separate;border-spacing:10px;" border="1" width="100%">
+        <caption>separate</caption>
+        <tr>
+        <td width="50%">表格边框折叠</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%">100</td>
+        </tr>
+  </table>
+  <table style="table-layout: automatic;border-collapse:collapse;border-spacing:10px;" border="1" width="100%">
+        <caption>collapse</caption>
+        <tr>
+        <td width="50%">表格边框折叠</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%">100</td>
+        </tr>
+  </table>
+  empty-cells:(show/hide)
+  <table style="table-layout: automatic;border-collapse:separate;empty-cells:hide;border-spacing:10px;border:2px solid #98bf21;" width="100%">
+        <caption>hide</caption>
+        <tr>
+        <td width="50%">是否显示空单元格</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%"></td>
+        </tr>
+  </table>
+  <table style="table-layout: automatic;border-collapse:separate;empty-cells:show;border-spacing:10px;" border="1" width="100%">
+        <caption>show</caption>
+        <tr>
+        <td width="50%">是否显示空单元格</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%"></td>
+        </tr>
+  </table>
+  border-spacing:(px)
+  <table style="table-layout: automatic;border-collapse:separate;empty-cells:hide;border-spacing: 10px" border="1" width="100%">
+        <caption>10px</caption>
+        <tr>
+        <td width="50%">设置表格之间的空白</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%"></td>
+        </tr>
+  </table>
+  <table style="table-layout: automatic;border-collapse:separate;empty-cells:hide;border-spacing: 4px" border="1" width="100%">
+        <caption>4px</caption>
+        <tr>
+        <td width="50%">设置表格之间的空白</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%"></td>
+        </tr>
+  </table>
+  caption-side:(top/bottom/inherit)
+  <table style="table-layout: automatic;border-collapse:separate;empty-cells:hide;border-spacing: 2px;caption-side:left;caption-side:bottom;" border="1" width="100%">
+        <caption>标题位置</caption>
+        <tr>
+        <td width="50%">标题位置</td>
+        <td width="10%">111111111111111111111111111111111111111111111111111111</td>
+        <td width="40%">00000</td>
+        </tr>
+  </table>
+#####outline
+  outline-style:(dotted...)
+  outline-color: #
+  outline-width: px
+  <span style="outline:5px dotted red;">轮廓</span>
+#####dimension
+  width/height:px
+  ```html
+  <img style="width:30px;height:40px;" src="http://www.w3school.com.cn//i/eg_smile.gif" />
+  ```
+  <div>
+  <img style="width:30px;height:40px;" src="http://www.w3school.com.cn//i/eg_smile.gif" />
+  </div>
+  max-height/max-width/min-height/min-width:px
+  <p style="max-height:2px;">最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度最大高度</p>
+  <img style="width:50px;" src="http://www.w3school.com.cn//i/eg_smile.gif" />
+#####classification
+   display:(inline/none/block/inline-block)
+   <span style="outline:dotted green;display:block;">行内元素变块级元素</span>
+   <p style="outline:dotted green;display:inline;">块级元素变行内元素</p>
+   <span style="outline:dotted green;display:block;display:none;">隐藏</span>
+
+   float:(left/right)
+   >浮动的框可以向左或向右移动，直到它的外边缘碰到包含框或另一个浮动框的边框为止。
+   >由于浮动框不在文档的普通流中，所以文档的普通流中的块框表现得就像浮动框不存在一样
+   <div  style="outline:dotted green;float:left;width:100px;">浮动左1</div>
+   <div  style="outline:dotted green;float:left;width:100px;margin-left:15px;">浮动左2</div>
+   <div  style="outline:dotted green;float:right;width:100px;margin-left:15px;">浮动右1</div>
+   <div  style="outline:dotted green;float:right;width:100px;margin-left:15px;">浮动右2</div>
+   <div  style="outline:dotted green;float:left;width:100px;margin-left:15px;">浮动左3</div>
+   <div  style="clear:both;"></div>
+   clear:(left/right/both)
+   如上
+   >clear 属性定义了元素的哪边上不允许出现浮动元素
+   >如果声明为左边或右边清除，会使元素的上外边框边界刚好在该边上浮动元素的下外边距边界之下
+   <div style="background-color: gray;border: solid 1px black;">
+        <img src="http://www.w3school.com.cn//i/eg_smile.gif" style="float: left;" width="10%"/>
+        <p style="float: right;width:89%">假设希望让一个图片浮动到文本块的左边，并且希望这幅图片和文本包含在另一个具有背景颜色和边框的元素中。您可能编写这样的代码</p>
+    </div>
+    <div style="clear:both"></div>
+    <div style="background-color: gray;border: solid 1px black;margin-top:5px;">
+        <img src="http://www.w3school.com.cn//i/eg_smile.gif" style="float: left;" width="10%"/>
+        <p style="float: right;width:89%">这种情况下，出现了一个问题。因为浮动元素脱离了文档流，所以包围图片和文本的 div 不占据空间。
+        如何让包围元素在视觉上包围浮动元素呢？需要在这个元素中的某个地方应用 clear</p>
+        <div style="clear:both"></div>
+    </div>
+    <div style="background-color: gray;border: solid 1px black;float:left;margin-top:5px;">
+        <img src="http://www.w3school.com.cn//i/eg_smile.gif" style="float: left;" width="10%"/>
+        <p style="float: right;width:89%">上面的例子不得不为了进行布局而添加无意义的标记,我们还有另一种办法，那就是对容器 div 进行浮动.是这些元素在同一流中</p>
+    </div>
+    <div  style="clear:both;"></div>
+    一个简单的浮动例子(菜单)
+    <ul style="float: left;
+      width: 100%;
+      list-style: none;">
+    <li style="float: left;
+        /* margin: 0; */
+        border: 1px solid #f3efef;
+        background-color: purple;
+        width: 7em;"><a style="text-decoration: none;
+        color: white;
+        padding: 3px;
+        /* width: 7em; */
+        display: block;
+        /* background: red; */" href="#">Link one</a></li>
+    <li style="float: left;
+        /* margin: 0; */
+        border: 1px solid #f3efef;
+        background-color: purple;
+        width: 7em;"><a style="text-decoration: none;
+        color: white;
+        padding: 3px;
+        /* width: 7em; */
+        display: block;
+        /* background: red; */" href="#">Link one</a></li>
+    <li style="float: left;
+        /* margin: 0; */
+        border: 1px solid #f3efef;
+        background-color: purple;
+        width: 7em;"><a style="text-decoration: none;
+        color: white;
+        padding: 3px;
+        /* width: 7em; */
+        display: block;
+        /* background: red; */" href="#">Link one</a></li>
+    <li style="float: left;
+        /* margin: 0; */
+        border: 1px solid #f3efef;
+        background-color: purple;
+        width: 7em;"><a style="text-decoration: none;
+        color: white;
+        padding: 3px;
+        /* width: 7em; */
+        display: block;
+        /* background: red; */" href="#">Link one</a></li>
+    </ul>
+    <div style="clear:both;"></clear>
+    一个简单的浮动例子(无表格首页)+overflow
+    <div class="container" style="width: 100%;
+    border: 1px solid gray;">
+
+<div class="header" style="background-color: gray;
+    color: white;"><h1 class="header" style="margin:0px;padding:10px;">mingf.wang</h1></div>
+
+<div class="left" style="float: left;
+    width: 7%;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-right: 1px solid;
+    padding: 5px;"><p>Never increase, beyond what is</p></div>
+
+<div class="content" style="padding: 0px 2px 10px 2px;overflow:scroll;height:100px;">
+<h2>Free Web Building Tutorials</h2>
+<p>At mingf.wang you will find all the Web-building tutorials you need,
+from basic HTML and XHTML to advanced XML, XSL, Multimedia and WAP.</p>
+</div>
+
+<div class="footer" style="clear: left;
+    width: 99%;
+    background-color: gray;
+    line-height: 30px;
+    padding-left: 1%;
+    color: white;">Copyright 2018 by mingf.wang.</div>
+</div>
+<div style="clear:both;"></div>
+
+<br>
+
+>explain 注意h1有默认的padding和margin,如果想去掉可以手动把它设为0
+
+cursor:
+<span style="cursor:crosshair">
+crosshair</span>
+#####position(默认static)
+relative: 
+<h4>这是原始位置</h4>
+<h4 style="position:relative;left:-20px">这是向左偏移</h4>
+<h4 style="position:relative;left:20px">这是向右偏移</h4>
+absolute:(相对于static以外的第一个父元素定位)
+<div style="width:50%;height:40px;border:1px solid red;position:relative;">
+<h4 style="position:absolute;right:0px;top:0px;margin:0px;">绝对定位</h4>
+</div>
+fixed:(相对于当前窗口的绝对定位)
+<div style="width:50%;height:40px;border:1px solid red;position:relative;">
+<h4 style="position:fixed;right:10px;bottom:10px;margin:0px;">相对于窗口的绝对定位</h4>
+</div>
+clip:(裁剪绝对定位元素)
+<div style="height:105px;">
+<img border="0" style="clip: rect(0px 40px 100px 10px);position:absolute;" src="http://www.w3school.com.cn/i/eg_bookasp.gif" width="120" height="151">
+</div>
+
+overflow:auto/hidden/visible(默认)/scroll
+<div style="background-color: #00FFFF;
+width: 150px;
+height: 150px;
+overflow-x: scroll;
+overflow-y: auto;">
+这个属性定义溢出元素内容区的内容会如何处理。如果值为 scroll，不论是否需要，用户代理都会提供一种滚动机制。因此，有可能即使元素框中可以放下所有内容也会出现滚动条。默认值是 visible。
+</div>
+vertical-align:(top/bottom)
+<p>
+这是一幅<img style="vertical-align:top" border="0" src="http://www.w3school.com.cn/i/eg_cute.gif" />位于段落中的图像。
+</p> 
+<p>
+这是一幅<img style="vertical-align:bottom" border="0" src="http://www.w3school.com.cn/i/eg_cute.gif" />位于段落中的图像。
+</p> 
+z-index:(<span style="color:red">position属性值为absolute、relative或fixed时，用z-index此取值方可生效</span>)
+<div style="position:relative;">
+<h1>这是一个标题</h1>
+<img style="position:absolute;
+left:0px;
+top:0px;
+z-index:-1" src="http://www.w3school.com.cn/i/eg_mouse.jpg" /> 
+<p>默认的 z-index 是 0。Z-index -1 拥有更低的优先级。</p>
+</div>
+
+#####pseudo-classes
+<style type="text/css">
+a:link {color: #FF0000}
+a:visited {color: #00FF00}
+a:hover {color: #FF00FF}
+a:active {color: #0000FF}
+input:focus
+{
+background-color:yellow;
+}
+q:lang(no)
+{
+quotes: "***" "~~~"
+}
+.child li:first-child {text-transform:uppercase;}
+.child li:nth-child(3) {color:red;}
+</style>
+<a href="/index.html" target="_blank">这是一个链接。</a>
+<input type="text" name="fname" />
+<ul class="child">
+<li>Intert Key</li>
+<li>Turn key <strong>clockwise</strong></li>
+<li>Push accelerator</li>
+</ul>
+<p>一些文本 <q lang="no">段落中的引用</q> 一些文本。</p>
+
+#####pseudo-elements
+<style type="text/css">
+p.pseudo:first-line {
+  color:green;
+}
+p.pseudo:first-letter {
+  color: #ff0000;
+  font-size:xx-large;
+}
+</style>
+<p class="pseudo">
+You can use the :first-letter pseudo-element to add a special effect to the first letter of a text!
+</p>
+
+###学习经典例子
+######九宫格
+<style type="text/css">
+.container-jgg {
+    width: 170px;
+    height: 170px;
+    margin-left:auto;
+    margin-top:auto;
+    float: left;
+    border: 1px solid green;
+}
+.box-jgg {
+    margin-left:5px;
+    margin-top:5px;
+}
+.box-jgg a:hover {
+    border: 5px solid red;
+    z-index: 2;
+}
+.box-jgg a {
+    width: 50px;
+    height: 50px;
+    margin-left: -5px;
+    margin-top: -5px;
+    display: block;
+    float: left;
+    text-align: center;
+    line-height: 50px;
+    border: 5px solid #ccc;
+    text-decoration: none;
+    z-index: 1;
+    position:relative;
+    /* border: 5px solid red; */
+}
+</style>
+<div class="container-jgg">
+    <div class="box-jgg">
+        <a href="#" title="1">1</a>
+        <a href="#" title="2">2</a>
+        <a href="#" title="3">3</a>
+        <a href="#" title="4">4</a>
+        <a href="#" title="5">5</a>
+        <a href="#" title="6">6</a>
+        <a href="#" title="7">7</a>
+        <a href="#" title="8">8</a>
+        <a href="#" title="9">9</a>
+    </div>
+</div>
+<div style="clear:left;"></div>
+######CSS清除浮动
+* 方法一
+  如上使用的方法 clear:both;
+* 方法二 
+  父级使用overflow:hidden;
+* 方法三
+  父级元素:after
+<style>
+.clear-outer {
+    border: 2px solid green;
+    overflow:hidden;
+} 
+.clear-outer div {
+    width: 50px;
+    height: 50px;
+    border: 1px solid red;
+    text-align: center;
+    line-height: 50px;
+    float: left;
+}
+</style>
+<div>
+<div class="clear-outer">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+</div>
+<p>已清除浮动</p>
+</div>
+
+<style type="text/css"> 
+   .div1{background:#000080;border:1px solid red;}
+   .div2{background:#800080;border:1px solid red;height:100px;margin-top:10px}
+   
+   .af-left{float:left;width:20%;height:200px;background:#DDD}
+   .af-right{float:right;width:30%;height:80px;background:#DDD}
+   
+   /*清除浮动代码*/
+    .clearfloat:after{display:block;clear:both;content:"";visibility:hidden;height:0}
+   .clearfloat{zoom:1} 
+   </style> 
+<div class="div1 clearfloat"> 
+<div class="af-left">Left</div> 
+<div class="af-right">Right</div> 
+</div>
+<div class="div2">
+已清除浮动
+</div>
+######居中
+* 单行的水平垂直居中
+* margin填充(嵌套div父级需要加padding,否则子集的margin-top不起作用)
+* left 50% right 50%
+* absolute+margin:auto
+<style type="text/css"> 
+.cc-content{
+    border: 1px solid red;
+    height:200px; 
+    line-height:200px;
+    text-align:center;
+    width: 500px;
+    margin-bottom: 20px;
+}
+</style>
+<div class="cc-content">单行的水平垂直居中</div>
+
+<style type="text/css">
+.ch-wrapper {
+    margin-left:auto;
+    margin-right:auto;
+    width:400px;
+    height:400px;
+    background-color:aquamarine;
+    padding: 50px; 
+    border: 10px solid royalblue;
+    margin-bottom: 20px;
+}
+ .ch-content{    
+    width:100px;
+    height:100px;
+    line-height: 100px;
+    border: 10px solid white; 
+    background-color:gold;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top:140px;
+    /* (400-120)/2 */
+    text-align: center;
+    background-clip:content-box;
+} 
+</style>
+<div class="ch-wrapper">
+     <div class="ch-content">margin填充</div> 
+</div>
+<style type="text/css">
+.wrap50 {
+    border: 1px solid red;
+    width:400px;
+    height:400px;
+    position:relative;
+    margin-bottom: 20px;
+}
+.content-relative50 {
+    position:absolute;
+    width:200px;
+    height:150px;
+    left:50%;
+    top:50%;
+    /* background-color:transparent; */
+    /* background-color:aquamarine; */
+    /* border: 10px solid royalblue; */
+}
+.content-inner50 {
+    width:100%;
+    height:100%;
+    position:relative;
+    left:-50%;
+    top:-50%;
+    /* border: 10px solid white;  */
+    background-color:gold;
+}
+</style>
+<div class="wrap50">
+  <div class="content-relative50">
+    <div class="content-inner50">50%</div>
+  </div>
+</div>
+
+<style type="text/css">
+.wrap-auto{
+    position:relative;
+    width:400px;
+    height:400px;
+    border: 1px solid red;
+}
+.content-auto{
+    position:absolute;
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+    margin:auto;
+    width:200px;
+    height:200px;
+    border: 1px solid green;
+}
+</style>
+<div class="wrap-auto">
+  <div class="content-auto">text-align:center+absolute</div>
+</div>
+
+ 
