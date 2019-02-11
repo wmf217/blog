@@ -1,0 +1,144 @@
+---
+layout:     post
+title:      "css3基础"
+subtitle:   " \"编辑器配合预览查看效果好\""
+date:       2018-07-20 19:28:00
+author:     "wmf"
+header-img: "img/common.jpg"
+catalog: true
+tags:
+    - css
+---
+## 正文  
+
+#####圆角
+border-radius:
+<div style="text-align:center;
+border:2px solid #a1a1a1;
+padding:10px 40px; 
+background:#dddddd;
+width:350px;
+border-radius:25px;
+-moz-border-radius:25px; /* 老的 Firefox */">border-radius 属性允许您向元素添加圆角。</div>
+box-shadow:
+<div style="width:300px;
+height:100px;
+background-color:#ff9900;
+-moz-box-shadow: 10px 10px 5px #888888; /* 老的 Firefox */
+box-shadow: 10px 10px 5px #888888;">border-shadow 属性允许您向元素添加阴影。</div>
+<br>
+border-image:(round/stretch <font color="red">ie不支持</font>)
+<style type="text/css"> 
+#round, #stretch
+{
+border:15px solid transparent;
+width:300px;
+padding:10px 20px;
+}
+#round
+{
+-moz-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;	/* Old Firefox */
+-webkit-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;	/* Safari and Chrome */
+-o-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;		/* Opera */
+border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;
+}
+</style>
+<div id="round">在这里，图片铺满整个边框。</div>
+
+#####背景
+background-size:
+<style> 
+#background-size
+{
+background:url(http://www.w3school.com.cn/i/bg_flower.gif);
+background-size:63px 30%;
+-moz-background-size:63px 30%; /* 老版本的 Firefox */
+background-repeat:no-repeat;
+background-position: center center;
+width:200px;
+height:200px;
+border: 1px solid red;
+text-align: center;
+}
+</style>
+<div id="background-size">规定背景图片的大小</div>
+background-origin:<font color="green">相对于内容框来定位背景图像</font>(border-box/padding-box/content-box)
+<style>
+.background-origin {
+    border:15px solid transparent;
+    -moz-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;	/* Old Firefox */
+    -webkit-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;	/* Safari and Chrome */
+    -o-border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;		/* Opera */
+    border-image:url(http://www.w3school.com.cn/i/border.png) 30 30 round;
+    padding: 10px;
+    background-image:url('http://www.w3school.com.cn/i/bg_flower.gif');
+    background-repeat:no-repeat;
+    background-position:left top;
+    margin-bottom:5px;
+}
+.background-origin-border {
+    background-origin:border-box;
+}
+.background-origin-padding {
+    background-origin:padding-box; 
+}
+.background-origin-content {
+    background-origin:content-box; 
+}
+</style>
+<div class="background-origin background-origin-border">
+background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;background-origin-border;
+</div>
+<div class="background-origin background-origin-padding">
+background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;background-origin-padding;
+</div>
+<div class="background-origin background-origin-content">
+background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;background-origin-content;
+</div>
+background-clip:(border-box/padding-box/content-box)
+<div style="width:150px;
+height:150px;
+padding:50px;
+background-color:yellow;
+background-clip:content-box;
+border:2px solid #92b901;">规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域规定背景的绘制区域</div>
+######文本效果
+text-shadow:
+<span style="text-shadow: 5px 5px 5px #FF0000;">文本阴影</span>
+word-wrap:(拆分长单词强制换行)
+<div style="width:200px;height:300px;background-color:green;background-clip:content-box;padding:10px;border:1px solid;word-wrap:break-word;">This paragraph contains a very long word: thisisaveryveryveryveryveryverylongword. The long word will break and wrap to the next line.</div>
+######字体
+@font-face:
+<style> 
+@font-face
+{
+font-family: myFirstFont;
+src: url('http://www.w3school.com.cn/example/css3/Sansation_Light.ttf')
+    ,url('http://www.w3school.com.cn/example/css3/Sansation_Light.eot'); /* IE9+ */
+}
+
+</style>
+<div style="font-family:myFirstFont;">自定义字体With CSS3, websites can finally use fonts other than the pre-selected "web-safe" fonts.</div>
+#####2D 转换
+transform-rotate:
+<div style="
+width:100px;
+height:50px;
+background-color: yellow;
+transform: rotate(9deg);
+-webkit-transform: rotate(9deg);/*Safari and Chrome*/
+-o-transform: rotate(9eg);/*Opera*/
+-moz-transform: rotate(9eg);/*Firefox*/
+-ms-transform: rotate(9eg);/*Firefox*/
+">旋转元素</div>
+transform-translate:
+<div style="
+width:100px;
+height:50px;
+background-color: yellow;
+transform:translate(50px,100px);
+-ms-transform:translate(50px,100px); /* IE 9 */
+-moz-transform:translate(50px,100px); /* Firefox */
+-webkit-transform:translate(50px,100px); /* Safari and Chrome */
+-o-transform:translate(50px,100px); /* Opera */
+">移动元素</div>

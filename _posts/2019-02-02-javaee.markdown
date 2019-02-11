@@ -1,0 +1,95 @@
+---
+layout:     post
+title:      "javaee 学习简记"
+subtitle:   " \"javaee 学习简记\""
+date:       2018-02-02 19:25:00
+author:     "wmf"
+header-img: "img/post-bg-js-version.jpg"
+catalog: true
+tags:
+    - java
+    - javaee
+    - 面向对象
+---
+### javaee 学习简记
+***
+##### JVM内存划分
+* 方法区
+  又叫静态区，存放所有的字节码和static变量或fianl常量, 方法区中包含的都是程序中永远唯一的元素
+* 虚拟机栈
+  执行引擎每调用一次函数时,就位这个函数创建一个栈帧,并加入虚拟机栈<font color="red">换个角度理解，每个函数执行的过程,就是其对应的栈帧的入栈与出栈</font>
+* 本地方法区(不懂)
+* 堆
+  被所有线程共享的区域，存放对象，数组等，使用new相当于在堆中开辟一个新的存储空间
+***
+##### 接口和抽象类的区别
+* 相同点
+1. 都可以被其它类实现或者被继承
+2. 都不能实例化
+3. 都可以定义抽象方法，定义的抽象方法子类必须覆盖
+* 不同点
+1. 接口不可以像抽象类一样拥有构造方法
+2. 接口不可以拥有普通方法，而抽象类可以
+3. 接口中默认的成员变量， public static final 静态常量，抽象类当中默认包访问权限
+4. 接口默认方法public abstract 方法名，抽象类默认权限(包访问权限)
+<br>
+<font color="red">抽象类是一种特殊的类，可以包含抽象方法</font>
+<font color="red">接口是一种特殊的抽象类，只能包含抽象方法，且默认为抽象方法(abstract可以不写)</font>
+***
+##### 多态
+屏蔽了不同类之间的实现差异，从而达到了通用编程的效果
+***
+##### 内部类
+1. 增强封装，把内部类封装到外部类当中，避免其它类访问
+2. 增加代码的维护性
+3. 内部类可以直接访问外部类中的成员
+***
+##### 内部类的划分
+1. 实例内部类(直接定义在类中，没有任何修饰符)
+2. 静态内部类(static)
+3. 局部内部类(定义在方法中)
+4. 匿名内部类(局部内部类的一种特殊情况)
+***
+##### 实例内部类包含外部类的引用(静态内部类不包含)
+<table>
+    <tr>
+        <th colspan="2"><font color="red">Outter</font></th>
+    </tr>
+    <tr>
+        <th>this</th>
+        <th>ox00b1</th>
+    </tr>
+</table>
+<table>
+    <tr>
+        <th colspan="2"><font color="red">Inner</font></th>
+    </tr>
+    <tr>
+        <th>this</th>
+        <th>ox00b2</th>
+    </tr>
+    <tr>
+        <th>Outter.this</th>
+        <th>ox00b1</th>
+    </tr>
+</table>
+```java
+class Outter {
+	String name = "outter name";
+	void say () {
+		System.out.println(Outter.this.name);//outter name
+	}
+	class Inner {
+		String name = "inner name";
+		void say () {
+			System.out.println(name); //inner name
+			System.out.println(this.name);//inner name
+			System.out.println(Outter.this.name);//outter name
+		}
+	}
+}
+```
+***
+
+
+
