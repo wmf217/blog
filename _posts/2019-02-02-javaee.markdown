@@ -89,7 +89,258 @@ class Outter {
 	}
 }
 ```
+
 ***
+##### 成员内部类
+通过反编译 protected class Inner {变为protected Member$Inner(Member paramMember, String s)
+该参数的类型为指向外部类对象的一个引用，所以成员内部类中的Outter this&0 指针便指向了外部类对象，因此可以在成员内部类中随意访问外部类的成员
+```java
+public class Member {
+	private Inner inner = null;
+	private String name = "wmf";
+	protected Inner getInner () { 
+		if (inner==null) {
+			inner = new Inner ("no thanks");
+		}
+		return inner;
+	}
+	
+	protected class Inner {
+		protected Inner (String s) {
+			System.out.println(s);
+		}
+		public void say () {
+			System.out.println(name);
+		}
+	}
+}
+
+```
+```java
+Member outter = new Member ();
+Inner inner = outter.new Inner();
+inner.say();
+Member.Inner inner = outter.getInner();
+```
+
+##### 静态内部类
+静态内部类只可以访问外部类的静态变量
+```java
+public class StaticInner {
+	public StaticInner() {
+        
+    }
+	public String name = "wmf";
+	static Integer count = 1;
+    static class Inner {
+        public Inner() {
+             
+        }
+        public void say () {
+        	//System.out.println(name); Cannot make a static reference to the non-static field name
+        	System.out.println(count);
+        }
+    }
+}
+```
+#### 局部内部类
+1.访问局部变量 Local variable innerName defined in an enclosing scope must be final or effectively final
+2.方法执行结束后对应的栈帧是要出栈的，而对象在堆中不会在此时立即销毁，因此可能会造成innerName的空指针，所以innerName 一定是默认的final变量，存储在常驻内存(方法区)
+3.局部内部类就像是方法里面的一个局部变量一样，是不能有public、protected、private以及static修饰符的
+```java
+public class Part {
+	public Base inner () {
+		String innerName = "127"; //final
+		class Inner extends Base {
+			public void say () {
+				System.out.println(this.name);
+				System.out.println(innerName); 
+			}
+		}
+		return new Inner();
+	}
+}
+abstract class Base {
+	protected String name = "217";
+	abstract void say();
+}
+```
+```java
+Part part = new Part();
+Base inner = part.inner();
+inner.say();
+```
+
+#### 匿名内部类
+new 父类构造器（参数列表）|实现接口（）
+{  
+    //匿名内部类的类体部分 
+}
+在使用匿名内部类的过程中，需要注意如下几点：
+1.使用匿名内部类时，我们必须是继承一个类或者实现一个接口，但是两者不可兼得，同时也只能继承一个类或者实现一个接口。
+2.匿名内部类中是不能定义构造函数的
+3.匿名内部类中不能存在任何的静态成员变量和静态方法
+4.匿名内部类为局部内部类，所以局部内部类的所有限制同样对匿名内部类生效
+5.匿名内部类不能是抽象的，它必须要实现继承的类或者实现的接口的所有抽象方法
+这些都很好理解
+```java
+abstract class Bird {
+    private String name = "大雁";
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public abstract int fly();
+}
+
+public class Anonymous {
+    public static void main(String[] args) {
+    	Anonymous test = new Anonymous();
+        test.test(new Bird() {
+	        public int fly() {
+	            return 10000;
+	        }
+        });
+    }
+    
+    public void test(Bird bird){
+        System.out.println(bird.getName() + "能够飞 " + bird.fly() + "米");
+    }
+}
+```
+#### 枚举(表示一个事件的固定状态)
+java 中的枚举是一个特殊的类，多个常量对象的集合
+[修饰符] enum 枚举的名称 {
+    常量1，常量2，常量3
+}
+```java
+enum WorkDay {
+    MONDAY, TUESDAY, WENDESDAY, FRIDAY, SATURDAY, SUNDAY
+}
+```
+```java
+    Student s = new Student ();
+    s.setRestDay(WorkDay.MONDAY);
+    WorkDay rest = s.getRestDay();
+    if (rest==WorkDay.SATURDAY||rest==WorkDay.SUNDAY) {
+        System.out.println("休息日");
+    } else {
+        System.out.println("上课的");
+    }
+```
+实际上，可以手动写一个复杂的枚举类,如下效果是一样的(枚举类是一个特殊的类，以下写法本质是一样的)
+```java
+class WorkDay {
+    private WorkDay (){} //枚举是不可以创建对象的
+    final WorkDay MONDAY = new WorkDay();
+    final WorkDay TUESDAY = new WorkDay();
+    final WorkDay WENDESDAY = new WorkDay();
+    final WorkDay FRIDAY = new WorkDay();
+    final WorkDay SATURDAY = new WorkDay();
+    final WorkDay SUNDAY = new WorkDay();
+}
+```
+#### 枚举的使用
+```java
+switch (WorkDay.valueOf("MONDAY")) {//word from font-end
+    case SATURDAY:
+        System.out.println("休息日");
+        break;
+    case SUNDAY:
+        System.out.println("休息日");
+        break;
+    default:
+        System.out.println("上课的");
+        break;
+}
+WorkDay[] values = WorkDay.values(); //获取所有的枚举
+```
+#### 常用类
+Syetem.arraycopy //拷贝数据
+Syetem.currentTimeMillis //时间截 可以测试程序执行的时间
+System.exit(0); //java虚拟拟关闭
+System.gc(); //java 立即执行垃圾回收机制 finalize 当一个对象呗垃圾回收机制回收了，一般不会主动调用
+Math.max();  //找出两个值的最大值
+Math.random(); // 随机数
+BigDecimal bigDecimal = new BigDecimal(0.09); // 大精度，用于金钱的计算
+###### 字符串创建及常量池的内存分析
+String s = "ABCD"; //会在常量池(方法区)中查找有没有一样的，有则直接指向，无则在常量池中创建一个
+String s = new String("ABCD"); //会在堆中新建一个对象，并去方法区查找，没有的话再在方法区创建一个
+###### 字符串的编译优化
+```java
+String str1 = "ABCD";
+String str2 = "AB" + "CD";
+String str3 = new String("ABCD");
+String temp = "AB";
+String str4 = temp + "CD";
+System.out.println(str1 == str2); //true
+System.out.println(str1 == str3); //false
+System.out.println(str1 == str4); //false
+```
+反编译之后的代码
+```java
+String str1 = "ABCD";
+String str2 = "ABCD";
+String str3 = new String("ABCD");
+String temp = "AB";
+String str4 = (new StringBuilder(String.valueOf(temp))).append("CD").toString();
+```
+###### 字符串常用方法
+indexOf //查询第一次出现的位置
+lastIndexOf //最后一次出现的位置
+toLowerCase //转小写
+toUpperCase //转大写
+equals  // 对比
+equalsIgnoreCase  //忽略大小写的对比
+split  //分割数组
+startsWith //开始
+substring //截取
+replace   //替换
+trim      //去空格
+###### StringBuilder&StringBuffer
+append    //链接
+使用这种方式可变字符串不需要重新开辟空间，性能比较高
+区别: buffer 加锁
+效率: StringBuilder>StringBuffer>String
+初始容量: 16, 如果超过自动扩容
+##### Random类
+构造器传参代表给一个种子，相同的种子随机数是一样的
+nextInt, nextBoolean
+//生成34到179的随机数
+```java
+Random random2 = new Random();
+int r = 34 + random2.nextInt(145);
+System.out.println(r);
+```
+##### UUID
+通用唯一标识符(结合当前时间，电脑网卡)
+UUID.randomUUID().toString()
+##### Date&DateFormat
+new Date();
+new Date(System.currentTimeMillis());
+toLocaleString: 转传统日期格式
+getTime: 转换时间截
+
+DateFormat.getInstance()
+```java
+DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+String format = df.format(new Date());
+System.out.println(format);
+```
+#### 集合Collection
+##### List(有序)
+1.ArrayList
+2.LinkedList
+3.Vector
+##### Set(无序)
+1.HashSet
+2.TreeSet
+
 
 
 
