@@ -334,12 +334,78 @@ System.out.println(format);
 ```
 #### 集合Collection
 ##### List(有序)
-1.ArrayList
-2.LinkedList
-3.Vector
+1.ArrayList 数组实现
+查找速度较快，删除或添加很慢(迭代器内部的删除添加，需要调整角标)
+2.LinkedList 链表实现
+插入和删除非常快，查找比较慢
+特有方法： addFirst, addLast, removeFirsrt, removeLast
+3.Vector 数组实现
 ##### Set(无序)
-1.HashSet
-2.TreeSet
+1.HashSet 哈希算法
+2.TreeSet 二叉树算法
+##### 常用方法
+addAll 合并集合
+removeAll 删除两个集合的交集
+containsAll 全部包含
+retainAll 取交集
+#### 泛型
+广泛通用的类型，代码模板中类型不确定，谁调用代码，谁就可以指明类型
+##### 通配符
+不知道使用什么类型接受时，可以使用
+```java
+void test (List<?> list) {
+    //只能用来接受，不能用来添加
+}
+```
+可以指定上限
+```java
+void test (List<? extends Number> list) {
+    //只能用来接受，不能用来添加
+}
+```
+也可以指定下限
+```java
+void test (List<? super Number> list) {
+    //只能用来接受，不能用来添加
+}
+```
+##### 泛型可以被擦除
+略
+##### list和数组互相转换
+1.数组转集合
+Arrays.asList
+```java
+Integer[] a = {10,20,30};
+List asList = Arrays.asList(a);
+```
+注：数组转集合后并不能继续添加元素也不能删除，因为数组的长度已固定，一般包含引用类型的数组才会去转集合操作，因为该操作会把引用类型存为每一个元素，如果上面代码是int而不是Integer，这返回值类型为list<int[]>, 数组长度为1
+源码：
+```java
+@SafeVarargs
+@SuppressWarnings("varargs")
+public static <T> List<T> asList(T... a) {
+    return new ArrayList<>(a);
+}
+```
+解析：第一个<T>自定义的泛型写法(可以不在类名后定义泛型)，...a可变数组
+2.集合转数组
+```java
+ArrayList<String> arr = new ArrayList<String>();
+arr.add("a");
+arr.add("b");
+Object[] array = arr.toArray(); //不带参数
+Object[] array = arr.toArray(new String[10]); //带参数指定大小
+```
+##### Set(无序集合)
+###### set自定义对象判断是否相同
+1.覆盖equals方法
+2.覆盖hashCode方法
+###### hashCode
+每一个新建的对象都有一个hashCode，代表对象存在的地址(每一个对象的hashCode值都是不一样的)，hashCode的方法可以覆盖让它不反回内存地址
+###### set对象去重原理
+set中执行add时会执行hashCode，如果不一样就会新加，如果一样就会继续执行equals去判断是否相等，因此如果想要实现对象去重，首先要覆盖hashCode使添加元素时调用equals，同时覆盖equals根据自定义的写法判断两个对象是否相等(hashCode每次添加都会调用，而equals从第二次添加开始调用)
+
+
 
 
 
