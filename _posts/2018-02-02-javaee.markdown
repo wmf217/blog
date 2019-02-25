@@ -4,7 +4,7 @@ title:      "javaee 学习简记"
 subtitle:   " \"javaee 学习简记\""
 date:       2018-02-02 19:25:00
 author:     "wmf"
-header-img: "img/post-bg-js-version.jpg"
+header-img: "img/in-post/laravel.jpg"
 catalog: true
 tags:
     - java
