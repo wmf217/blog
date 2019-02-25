@@ -396,7 +396,21 @@ arr.add("b");
 Object[] array = arr.toArray(); //不带参数
 Object[] array = arr.toArray(new String[10]); //带参数指定大小
 ```
-##### Set(无序集合)
+##### Set(无序集合，主要目的是去重?)
+###### set去重的现象
+```java
+HashSet<Cat> set = new HashSet<Cat>();
+set.add(new Cat("white"));
+set.add(new Cat("green"));
+set.add(new Cat("green"));
+System.out.println(set);//[Cat [name=white], Cat [name=green], Cat [name=green]]
+HashSet<String> set2 = new HashSet<String>();
+set2.add("white");
+set2.add("green");
+set2.add("green");
+System.out.println(set2);//[green, white]
+```
+总结：系统对象可以起到去重的作用，而自定义对象无法起到去重的作用
 ###### set自定义对象判断是否相同
 1.覆盖equals方法
 2.覆盖hashCode方法
@@ -404,6 +418,210 @@ Object[] array = arr.toArray(new String[10]); //带参数指定大小
 每一个新建的对象都有一个hashCode，代表对象存在的地址(每一个对象的hashCode值都是不一样的)，hashCode的方法可以覆盖让它不反回内存地址
 ###### set对象去重原理
 set中执行add时会执行hashCode，如果不一样就会新加，如果一样就会继续执行equals去判断是否相等，因此如果想要实现对象去重，首先要覆盖hashCode使添加元素时调用equals，同时覆盖equals根据自定义的写法判断两个对象是否相等(hashCode每次添加都会调用，而equals从第二次添加开始调用)
+###### linkedHashSet
+可以保证元素怎么进就怎么出(唯一一个set保证元素的添加顺序)
+###### 字符串去重的例子(Character不是自定义对象，因此不用考虑以上的set对象去重的方法)
+```java
+Scanner scanner = new Scanner(System.in);
+System.out.println("输入一串数字");
+String nextLine = scanner.nextLine();
+char[] charArray = nextLine.toCharArray();
+System.out.println(Arrays.toString(charArray));
+LinkedHashSet<Character> set = new LinkedHashSet<Character>();
+for (char c :charArray) {
+    set.add(c);
+}
+System.out.println(set);
+```
+#### treeSet(Set的一种)
+一样可以起到去重的,而且可以起到排序的作用
+自定义对象不能添加到treeSet中，如果想添加必须要遵循一定规则，由于treeSet主要用来排序，所以一定要实现comparable，覆盖compareTo,否则会报错cannot be cast to java.lang.Comparable
+##### compareTo
+1.返回0:只添加第一个元素
+2.返回正数:怎么添加的顺序怎么显示
+3.返回负数:倒叙显示
+##### compareTo原理
+treeSet是一个二叉树结构，第一个添加的元素为根节点(这里经测试执行了依次compare)，接下来添加的元素向下劈叉，如果比第一个元素大(返回1)，插入下方劈叉的右边，如果比第一个元素小(返回-1)，则会插入劈叉的左边，下一次再添加元素会从树根向树杈依次比较找到在树中插入的位置，如果返回0则不执行添加元素，返回元素时按从左向右依次放回。
+二叉树：左右发叉，子节点可以再发叉
+##### treeSet自定义排序的实现方法
+由于自定义对象，所以首先肯定不会过滤相同属性的元素(treeSet也是Set的一种，在去重方面与hashSet有相同的效果)
+例子比较薪资
+```java
+class Work implements Comparable<Work>{
+	Work (String name, Integer salary) {
+		this.name = name;
+		this.salary = salary;
+	}
+	public String name;
+	public Integer salary;
+	@Override
+	public int compareTo(Work o) {
+		//如果薪水高向右插入，薪水低向左插入
+		return this.salary - o.salary;
+	}
+	@Override
+	public String toString() {
+		return "Work [name=" + name + ", salary=" + salary + "]";
+	}
+	
+}
+```
+注：这里如果薪资一样则不会添加(返回0的时候不添加)
+为解决这个问题。可以在薪水相同时继续比较name属性
+```java
+public int compareTo(Work o) {
+    int num = this.salary - o.salary;
+    return num==0?this.name.compareTo(o.name):num;
+}
+```
+注：这段代码this.name可以调用compareTo，是由于String里面已经实现了compareTo方法，这也是为什么非自定义对象可以直接加入treeSet中
+##### 使用比较器进行比较(如果有比较器则不会执行对象内部的comparaTo方法了)
+1.实现一个借口comparator
+2.覆盖方法campare(T o1, To2) //o1代表当前添加的对象，o2代表集合当中的对象
+```java
+class ComparaMyWay implements Comparator<String> {
+	@Override
+	public int compare(String o1, String o2) {
+		// TODO Auto-generated method stub
+		int lec = o1.length() - o2.length();
+		return lec==0?o1.compareTo(o2):lec;
+	}
+}
+```
+调用
+```java
+TreeSet<String> set = new TreeSet<String>(new ComparaMyWay());
+set.add("aaaa");
+set.add("bjhhh");
+set.add("ad");
+set.add("c");
+System.out.println(set);//[c, ad, aaaa, bjhhh]
+```
+#### Map
+Map是一个接口
+映射关系
+A集合(元素不能重复，是一个Set集合) B集合 (ArrayList, LinkedList, Vector, HashSet, TreeSet, LinkedHashSet)
+实现类：HashMap...
+map.values() 返回所有值的集合，返回的是一个collection
+map.put() 添加，如果键不存在返回null，如果键已存在则为更新并返回原来的值
+map.remove() 删除
+map.clear() 清空所有元素
+map.size() 长度
+map.get() 获取
+map.keySet() map本身没有迭代器，可以通过该方法获取所有k的Set(Set中有迭代器)，也可以通过这种方法区foreach k的Set,这种方法有点麻烦，需要先取出所有k再依次通过k取出value
+Entry对象遍历法
+```java
+Set<Entry<Integer, String>> entrySet = map.entrySet();
+for(Map.Entry<Integer, String> s: entrySet) {
+    System.out.println(s.getKey());
+    System.out.println(s.getValue());
+}
+```
+解析：Entry是Map的一个内部类
+```java
+public interface Map<K,V> {
+    interface Entry<K,V> {
+        ...
+    }
+    ...
+}
+```
+##### 自定义键值
+因为键值是Set,所以1.覆盖equals方法2.覆盖hashCode方法
+```java
+package map;
+
+import java.util.HashMap;
+
+class Person {
+	public Person(String name, Integer age) {
+		super();
+		this.name = name;
+		this.age = age;
+	}
+	public String name;
+	public Integer age;
+	@Override
+	public String toString() {
+		return "Person [name=" + name + ", age=" + age + "]";
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((age == null) ? 0 : age.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Person other = (Person) obj;
+		if (age == null) {
+			if (other.age != null)
+				return false;
+		} else if (!age.equals(other.age))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+}
+public class custom {
+	public static void main(String[] args) {
+		HashMap<Person, String> map = new HashMap<Person, String>();
+		map.put(new Person("wmf",19), "php");
+		map.put(new Person("zf",20), "java");
+		map.put(new Person("wmf",19), "go");
+		System.out.println(map);
+	}
+}
+```
+##### LinkedHashMap
+保证元素顺序，链式结构(手拉手)
+##### TreeMap
+会对key进行排序，这里的tree结构和上面的link结构代表的都是A集合的结构，如果是自定义对象参考TreeSet
+##### HashMap和HashTable的区别
+1.相同点: 都是Hash算法，都是双列集合
+2.区别:  
+HashMap 线程不安全，效率比较高，可以存null
+HashTable 线程安全，不可以存入null
+#### 自定义异常
+##### 运行时异常
+1.继承RuntimeException
+2.抛出自定义异常对象
+##### 编译时异常(功能，代码必须处理，要么try..catch要么网上抛)
+1.继承Exception
+2.抛出自定义异常对象
+```java
+class MyException extends RuntimeException {
+	MyException (String message) {
+		super(message);
+	}
+}
+class MyException2 extends Exception {
+	MyException2 (String message) {
+		super(message);
+	}
+}
+public class treeMap {
+	public static void main(String[] args) throws MyException2 {
+		//throw new MyException();
+		
+		throw new MyException2("出错了");
+	}
+}
+```
+
+
 
 
 
