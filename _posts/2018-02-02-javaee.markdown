@@ -143,6 +143,7 @@ public class StaticInner {
     }
 }
 ```
+***
 #### 局部内部类
 1.访问局部变量 Local variable innerName defined in an enclosing scope must be final or effectively final
 2.方法执行结束后对应的栈帧是要出栈的，而对象在堆中不会在此时立即销毁，因此可能会造成innerName的空指针，所以innerName 一定是默认的final变量，存储在常驻内存(方法区)
@@ -170,7 +171,7 @@ Part part = new Part();
 Base inner = part.inner();
 inner.say();
 ```
-
+***
 #### 匿名内部类
 new 父类构造器（参数列表）|实现接口（）
 {  
@@ -213,6 +214,7 @@ public class Anonymous {
     }
 }
 ```
+***
 #### 枚举(表示一个事件的固定状态)
 java 中的枚举是一个特殊的类，多个常量对象的集合
 [修饰符] enum 枚举的名称 {
@@ -245,6 +247,7 @@ class WorkDay {
     final WorkDay SUNDAY = new WorkDay();
 }
 ```
+***
 #### 枚举的使用
 ```java
 switch (WorkDay.valueOf("MONDAY")) {//word from font-end
@@ -260,6 +263,7 @@ switch (WorkDay.valueOf("MONDAY")) {//word from font-end
 }
 WorkDay[] values = WorkDay.values(); //获取所有的枚举
 ```
+***
 #### 常用类
 Syetem.arraycopy //拷贝数据
 Syetem.currentTimeMillis //时间截 可以测试程序执行的时间
@@ -332,6 +336,7 @@ DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG)
 String format = df.format(new Date());
 System.out.println(format);
 ```
+***
 #### 集合Collection
 ##### List(有序)
 1.ArrayList 数组实现
@@ -348,6 +353,7 @@ addAll 合并集合
 removeAll 删除两个集合的交集
 containsAll 全部包含
 retainAll 取交集
+***
 #### 泛型
 广泛通用的类型，代码模板中类型不确定，谁调用代码，谁就可以指明类型
 ##### 通配符
@@ -396,6 +402,7 @@ arr.add("b");
 Object[] array = arr.toArray(); //不带参数
 Object[] array = arr.toArray(new String[10]); //带参数指定大小
 ```
+***
 ##### Set(无序集合，主要目的是去重?)
 ###### set去重的现象
 ```java
@@ -433,6 +440,7 @@ for (char c :charArray) {
 }
 System.out.println(set);
 ```
+***
 #### treeSet(Set的一种)
 一样可以起到去重的,而且可以起到排序的作用
 自定义对象不能添加到treeSet中，如果想添加必须要遵循一定规则，由于treeSet主要用来排序，所以一定要实现comparable，覆盖compareTo,否则会报错cannot be cast to java.lang.Comparable
@@ -497,6 +505,7 @@ set.add("ad");
 set.add("c");
 System.out.println(set);//[c, ad, aaaa, bjhhh]
 ```
+***
 #### Map
 Map是一个接口
 映射关系
@@ -594,6 +603,7 @@ public class custom {
 2.区别:  
 HashMap 线程不安全，效率比较高，可以存null
 HashTable 线程安全，不可以存入null
+***
 #### 自定义异常
 ##### 运行时异常
 1.继承RuntimeException
