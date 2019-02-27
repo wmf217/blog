@@ -13,8 +13,146 @@ tags:
 ---
 ### xml 学习简记
 ***
+##### 语法规则
+1. 所有XML元素必须关闭标签
+2. XML标签对大小写敏感
+3. XML必须正确嵌套
+4. XML文档必须有根元素
+5. XMl属性值需加引号
+##### 命名规则
+1. 名称可以包含字母数字，其它字符
+2. 起始不能以数字标点开头
+3. 名称不能加空格
+4. 不能包含XML关键字
+##### 属性文本
+<![cdata[]]> 里面的内容不会解析
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<book id="101">
+	<name>zs</name>
+	<price>
+		<![CDATA[
+			<abc>19</abc>
+		]]>
+	</price>
+</book>
+```
+##### XML约束
+###### DTD约束
+1. 内部dtd
+很少用
+2. 外部dtd
+可以本地单独定义(system)，也可以引用网络文件(public)
+```dtd
+<!ELEMENT note (to*,from?,and+)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT and (#PCDATA)>
+```
+注释：note下可以声明to和from元素，*代表可以任意多，?代表可以出现可以不出选, +代表至少有一个，而且要按顺序
+PCDATA 文本
+还有很多看文档吧
+###### schema
+随便看下吧，功能比较多 .xsd文件
+#### XML解析
+##### XML文档结构(树结构)
+1.Document 文档节点
+2.Element 元素节点
+3.Attr 属性节点
+4.Text 文本节点
+##### DOM解析特点
+使用JAVA代码操作DOM 相当于使用JS操作HTML的DOM
+在加载时，会一次性把XML加载到内存，在内存中形成一棵树
+操作时实际上操作的是内存中的DOM树
+如果要修改需要做一个同步操作以确保内存中的DOM树和XML中保持一致
+XML过大会导致内存溢出
+##### DOM解析步骤
+1.创建一个解析器工厂
+2.通过解析工厂获得解析器
+3.通过解析器获得document对象
+4.获取具体节点内容
+##### XMl创建DOM解析器获取节点
+```java
+//1.创建解析器工厂
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+//2.得到解析器
+DocumentBuilder db = dbf.newDocumentBuilder();
+//3.获取document对象
+Document doc = db.parse("src/xml/index.xml");
+//System.out.println(doc); //[#document: null] 正确
+//4.获取具体节点内容
+NodeList names = doc.getElementsByTagName("name");
+Node item = names.item(0);
+System.out.println(item.getTextContent());
+```
+##### XMl修改DOM内容
+```java
+//1.创建解析器工厂
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+//2.得到解析器
+DocumentBuilder db = dbf.newDocumentBuilder();
+//3.获取document对象
+Document doc = db.parse("src/xml/index.xml");
 
-
+//1.获取指定节点
+NodeList prices = doc.getElementsByTagName("price");
+Node item1 = prices.item(1);
+//2.修改内容
+item1.setTextContent("30");
+//3.同步
+Transformer tf = TransformerFactory.newInstance().newTransformer();
+tf.transform(new DOMSource(doc), new StreamResult("src/xml/index.xml"));
+```
+##### XML新加DOM节点
+```java
+//1.创建一个节点
+Element ele = doc.createElement("page");
+//2.节点添加内容
+ele.setTextContent("100");
+//3.获取父节点
+Node item = doc.getElementsByTagName("book").item(0);
+//4.添加节点
+item.appendChild(ele);
+//5.同步
+Transformer tf = TransformerFactory.newInstance().newTransformer();
+tf.transform(new DOMSource(doc), new StreamResult("src/xml/index.xml"));
+```
+##### XML删除DOM元素
+略
+##### XML添加置顶元素属性
+略
+#### Dom4j(非官方)
+##### sax解析
+1.事件驱动
+2.不占内存
+3.只能读
+4.基本不用
+##### Dom4j解析
+非常简单，常用，看文档
+```java
+SAXReader reader = new SAXReader();
+Document doc = reader.read("src/xml/dom4j/index.xml");
+Element rootElement = doc.getRootElement();
+List<Element> elements = rootElement.elements();
+for(Element ele: elements) {
+    Element nameEle = ele.element("name");
+    System.out.println(nameEle.getText());
+    //System.out.println(ele.elementText("name")); 可以用一句话代替
+    System.out.println(ele.attributeValue("id")); //属性值
+}
+```
+##### Dom4j添加
+```java
+SAXReader reader = new SAXReader();
+Document doc = reader.read("src/xml/dom4j/index.xml");
+Element rootElement = doc.getRootElement();
+Element newBook = rootElement.addElement("book").addAttribute("id", "999");
+newBook.addElement("name").setText("go");
+//这里还可以格式化，看文档
+FileWriter out = new FileWriter("src/xml/dom4j/index.xml");
+doc.write(out);
+out.close();
+```
 
 
 
