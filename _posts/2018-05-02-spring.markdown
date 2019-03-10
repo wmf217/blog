@@ -1,0 +1,365 @@
+---
+layout:     post
+title:      "spring 学习笔记"
+subtitle:   " \"spring 学习笔记\""
+date:       2018-05-02 19:25:00
+author:     "wmf"
+header-img: "img/in-post/laravel.jpg"
+catalog: true
+tags:
+    - java
+    - javaee
+---
+### Spring 学习笔记
+***
+#### Spring简介
+略
+#### 基础配置文件
+applicationContext.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+        <context:component-scan base-package="com.company.demo1"/>
+        <!--扫面的包-->
+</beans>
+```
+#### 测试代码
+User
+```java
+package com.company.demo1;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+@Component("user") //注册组件,相当于配置文件中的<bean id="user"class="com.company.demo1.User>
+public class User {
+    @Value("wmf") //依赖注入
+    public String name;
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
+}
+```
+Test
+```java
+package com.company.demo1;
+import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+public class UserTest {
+    @Test
+    public void test () {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+        User user = (User) applicationContext.getBean("user");
+        //获取user对象
+        System.out.println(user);//wmf
+    }
+}
+```
+#### Component三个衍生注解
+@Controller web层
+@Service 服务层
+@Repository DAO层
+功能基本是一样的
+#### 依赖注入
+@value 普通类型
+@Autowired 引用类型属性注入，按照类型注入
+@Autowired + @Qualifier 按照名称注入
+@Resource 按照名称注入，和上一个一样
+```java
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+@Repository("user")
+public class User {
+    @Value("wmf")
+    public String name;
+    @Autowired //按照类型注入
+    //@Qualifier("dog") 结合上一句按名称注入
+    public Dog dog;
+}
+```
+#### 生命周期
+@PostConstruct 对象初始化调用的方法
+@PreDestroy 对象销毁之前
+@@Scope 范围: prototype(多例), sington(单例:默认)
+```java
+@Scope("prototype")
+public class User {
+    .....
+}
+```
+#### xml与注解的结合
+xml 结构清晰，任何场景下都可以使用
+注解 只能自己创建的类，注入方便
+结合
+加上```<context:annotation-config/>```
+取消自动扫描(删除```<context:component-scan base-package="com.company.demo1"/>```)
+效果：使用xml管理类 使用注解依赖注入
+#### AOP
+场景：插入日志，加入权限校验等补充操作，不破坏原代码基础上进行修改
+核心：不破坏原有类的基础上生成一个代理类，再原有类的基础上进行增强，可以随时添加，取消添加功能
+#### JDK动态代理(有接口的情况下)
+通过代理方式返回一个新的对象，该对象拥有原对象的所有功能并可以再每个方法执行前后补充一些操作
+```java
+public interface GoodDao {
+    public void save();
+    public void update();
+}
+```
+```java
+public class GoodDaoImpl implements GoodDao {
+    @Override
+    public void save() {
+        System.out.println("保存成功");
+    }
+    @Override
+    public void update() {
+        System.out.println("更新成功");
+    }
+}
+```
+```java
+public class GoodJDKProxy {
+    public GoodDao createProxy(GoodDao goodDao) {
+        //增强
+        GoodDao goodDaoProxy = (GoodDao) Proxy.newProxyInstance(
+                goodDao.getClass().getClassLoader(),
+                goodDao.getClass().getInterfaces(),
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        if ("save".equals(method.getName())) {
+                            System.out.println("权限校验-----");
+                        }
+                        if ("update".equals(method.getName())) {
+                            System.out.println("日志记录-----");
+                        }
+                        return method.invoke(goodDao, args);
+                    }
+                }
+        );
+        return goodDaoProxy;
+    }
+}
+```
+```java
+@org.junit.Test
+public void test () {
+    GoodDaoImpl goodDao = new GoodDaoImpl();
+    GoodJDKProxy goodJDKProxy = new GoodJDKProxy();
+    GoodDao proxy = goodJDKProxy.createProxy(goodDao);
+    proxy.save(); //权限校验----- + 保存成功
+    proxy.update();//日志记录----- + 保存成功
+}
+```
+#### cglib动态代理(无接口)
+通过代理方式返回一个新的对象，该对象是原有对象的子类实现，可以使用父类方法并添加回调
+```java
+public class UserDao {
+    public void save () {
+        System.out.println("保存成功");
+    }
+}
+```
+```java
+public class UserDaoCglibProxy implements MethodInterceptor {
+    public UserDao createProxy (UserDao userDao) {
+        //创建核心类
+        Enhancer enhancer = new Enhancer();
+        //设置父类 继承方式 创建一个子类继承userDao
+        enhancer.setSuperclass(userDao.getClass());
+        //设置回调
+        enhancer.setCallback(this);
+        //创建代理对象 把子类返回
+        UserDao son = (UserDao) enhancer.create();
+        return son;
+    }
+    @Override
+    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+        System.out.println("权限校验");
+        return methodProxy.invokeSuper(o, objects);
+    }
+}
+```
+```java
+@org.junit.Test
+public void test () {
+    UserDao userDao = new UserDao();
+    UserDaoCglibProxy userDaoCglibProxy = new UserDaoCglibProxy();
+    UserDao proxy = userDaoCglibProxy.createProxy(userDao);
+    proxy.save();//权限校验+保存成功
+}
+```
+#### spring AOP简介
+以上的两种代理方式不需要手动实现，在spring中只需要配置即可
+spring实现AOP使用的是AspectJ框架
+#### spring AOP相关术语
+Joinpoint: 连接点 能攻被拦截并被增的方法(上面的save update 等)
+PointCut: 切入点 实际被拦截被增强的方法(上面的save update 等 "save".equals(method.getName())保存就是一个切入点)
+Adivce: 通知 增加的内容，比如插入日志、增加权限这些都是通知
+Introduction: 引介 类本身的增强，给原有类添加一些新的方法(不常用)
+Target: 对象被增强的对象 比如上面的UserDao,GoodDao
+Proxy: 代理 被增强之后的对象，上例中的proxy
+Weaving: 织入 把通知加入到对象的过程
+Aspect: 切面 多个通知和多个切入点的集合，相当于一种配置
+#### spring-test的使用
+用注解方式实现工厂的调用，不需要再次去声明工厂
+语法```@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")```
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml") //声明配置文件所在位置
+public class Test {
+    @Autowired
+    private UserDao userDao;
+    @org.junit.Test
+    public void test () {
+        this.userDao.save();
+    }
+}
+```
+#### AOP的配置
+1.编写切面类
+2.将切面类交给sring
+3.配置切面
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+        <bean id="userDao" class="com.company.aop.UserDao"/><!--将普通切入点加入spring容器-->
+        <bean id="myaspect" class="com.company.aop.MyAspect"/><!--将切面类加入spring容器-->
+        <!--aop配置-->
+        <aop:config>
+                <!--切入点配置-->
+                <aop:pointcut id="pointsave" expression="execution(* com.company.aop.UserDao.save(..))"/>
+                <!--切面配置-->
+                <aop:aspect ref="myaspect">
+                        <aop:before method="check" pointcut-ref="pointsave"/>
+                </aop:aspect>
+        </aop:config>
+</beans>
+```
+```java
+public class UserDao {
+    public void save () {
+        System.out.println("用户保存成功");
+    }
+}
+```
+```java
+public class MyAspect {
+    public void check () {
+        System.out.println("权限校验");
+    }
+}
+```
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class Test {
+    @Autowired
+    private UserDao userDao;
+    @org.junit.Test
+    public void test () {
+        this.userDao.save();
+        //权限校验
+        //用户保存成功
+    }
+}
+```
+#### AOP的配置
+* before 前置通知 
+* after-returning 后置通知 可以获得切入点的返回值
+    ```<aop:after-returning method="check" pointcut-ref="pointsave" returning="res"/>```
+    res就是返回值，与相应通知的参数一定相同，参数类型一般写Object
+* around 环绕通知
+这个写法可以在方法运行前后分别添加操作，为了分清前后，要在通知中加一个参数ProceedingJoinPoint作为当前的切入点，调用proceed方法代表切入点方法执行，写在
+proceed方法前代表在之前执行，写在后面代表之后执行
+配置
+    ```<aop:around method="around" pointcut-ref="pointcut2"/>```
+MyAspect.java:
+    ```java
+    public Object around (ProceedingJoinPoint pj) throws Throwable {
+        System.out.println("开启事务");
+        Object proceed = pj.proceed(); //切入点方法执行
+        System.out.println("结束事务");
+        return proceed; //一定要返回执行结果
+    }
+    ```
+* after-throwing 异常抛出通知
+* after 最终通知，不管有没有异常都会通知
+#### 切入点表达式
+```execution(* com.company.aop.UserDao.update(..))```
+* com.company.aop.UserDao.update(..) *代表任意类型
+* com.company.aop.UserDao+.update(..) +加代表可以是当前类也可以是子类
+* com.company..\*.\*(..) 代表com.company包和子包下的所有方法
+#### AOP注解开发
+配置文件中开启注解
+```<aop:aspectj-autoproxy/>```
+```java
+@Repository
+public class UserDao {
+    public void save () {
+        System.out.println("保存成功");
+    }
+    public void update () {
+        System.out.println("更新成功");
+    }
+}
+```
+```java
+@Repository
+@Aspect
+public class UserAspect {
+    @Before(value="execution(* com.company.demo.UserDao.save(..))")
+    //如果运用在包下所有方法可以用*
+    //如果想作用在多个方法可以用||隔开
+    //如果要返回值可以加return
+    public void check () {
+        System.out.println("权限校验");
+    }
+    @Around(value="execution(* com.company.demo.UserDao.update(..))")
+    public Object tranlt (ProceedingJoinPoint jp) throws Throwable {
+        System.out.println("开启事务");
+        Object proceed = jp.proceed();
+        System.out.println("结束事务");
+        return proceed;
+    }
+}
+```
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class Test {
+    @Autowired
+    private UserDao userDao;
+    @org.junit.Test
+    public void test(){
+        this.userDao.save();
+        this.userDao.update();
+    }
+}
+```
+输出为：
+权限校验
+保存成功
+开启事务
+更新成功
+结束事务
+#### AOP内部代理机制
+有接口JDK 没有接口cglib
