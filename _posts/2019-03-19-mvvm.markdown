@@ -1,0 +1,18 @@
+---
+layout:     post
+title:      "MVVM框架实现"
+subtitle:   " \"简易MVVM实现\""
+date:       2019-03-19 20:44:00
+author:     "wmf"
+header-img: "img/post-bg-js-version.jpg"
+catalog: true
+tags:
+    - js
+    - 面向对象
+---
+##前言
+这里参照了一些网上实现mvvm的方式，自己动手写了个简易的mvvm框架，并记录一些基本的理解，主要采用观察者-订阅者设计模式
+##### Observer
+
+
+
