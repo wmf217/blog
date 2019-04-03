@@ -1,0 +1,85 @@
+---
+layout:     post
+title:      "maven 学习笔记"
+subtitle:   " \"maven 学习笔记\""
+date:       2019-04-03 19:25:00
+author:     "wmf"
+header-img: "img/in-post/laravel.jpg"
+catalog: true
+tags:
+    - java
+    - spring
+---
+### maven 学习笔记
+##### maven指令
+1. mvn compile:
+This will run Maven, telling it to execute the compile goal. When it’s finished, you should find the compiled .class files in the target/classes directory.
+按照maven约束好的文件路径建好项目后，加入pom.xml 在命令行输入mvn compile后，maven就会自动帮我们下载依赖jar，为代码生成字节码文件等。我们把这个过程称为 编译
+2. package
+The package goal will compile your Java code, run any tests, and finish by packaging the code up in a JAR file within the target directory
+打包,执行完之后有一个jar包在项目target目录下
+3. mvn install
+Maven also maintains a repository of dependencies on your local machine (usually in a .m2/repository directory in your home directory) for quick access to project dependencies. If you’d like to install your project’s JAR file to that local repository, then you should invoke the install goa
+打包到本地库，这个命令就是在将项目打包成jar包，放到我们电脑本地上的repository,也就是本地的仓库，一般来说都是路径都是c:\users\{你的用户}\m2\repository。而打的包就放在该repository目录下，具体路径就是项目的包名。一般情况先排除其他干扰因素，我们打包使用mvn clean install 而不是 mvn install。就是在打包之前先清理了项目编译生成的文件
+4. mvn clean
+执行了mvn clean命令之后，maven就会把项目输出的文件和目录都删除掉。所以一般我们要做一些操作和测试的时候，为了避免其他因素上的干扰，我们都会首先执行mvn clean,清理一下项目生成的文件和目录
+##### 国内镜像
+为了解决maven compile时间过长的问题，添加阿里镜像
+修改方法：在~/.m2目录下的settings.xml文件中，（如果该文件不存在，则需要从maven/conf目录下拷贝一份），找到标签，添加如下子标签：
+```xml
+<mirror>
+    <id>alimaven</id>
+    <name>aliyun maven</name>
+    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+    <mirrorOf>central</mirrorOf>        
+</mirror>
+```
+##### 加入依赖
+```xml
+<dependencies>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.9.2</version>
+		</dependency>
+</dependencies>
+```
+执行mvn compile会下载相关依赖至本地仓库
+本地仓库地址maven/conf/setting.xml
+```xml
+<localRepository>D:/work/java/mvnrep</localRepository>
+```
+pom.xml右键->add as maven->reimport
+会把相关依赖引入项目
+之后就可以在项目中使用第三方依赖了
+```java
+import org.joda.time.LocalTime;
+public class HelloWorld {
+    public static void main(String[] args) {
+        LocalTime currentTime = new LocalTime();
+        System.out.println("The current local time is: " + currentTime);
+    }
+}
+```
+##### 引入Junit的一个错误
+@Test报错
+解决方法
+```xml
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+    <!-- <scope>test</scope> -->
+</dependency>
+```
+scope要注释掉重新reimport->@Test注解上Atl+Space：import class
+##### maven 本地仓库
+在学习过程中由于之前配置了本地仓库所有mvn compile下载的依赖都存放在D:/work/java/mvnrep，但项目引用的确实.m2\repository里面的依赖，如果没有就会报错
+原因：setting maven 里面的repository改变了D:/work/java/mvnrep，user setting file使用的确实.m2下的，点击override修改为D:\work\java\apache-maven-3.6.0\conf\settings.xml把.m2\repository全删掉，结束
+
+
+
+
+
+
+
