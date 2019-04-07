@@ -14,54 +14,54 @@ tags:
 ##### 微服务
 一个项目 可以由多个 小型服务构成
 ##### sprint boot 可以简化开发 微服务模块
-1. 简化j2ee开发
-2. 整个spring技术栈的整合(springmvc spring)
-3. 整个j2ee技术的整合 (mybatis redis)
+简化j2ee开发
+整个spring技术栈的整合(springmvc spring)
+整个j2ee技术的整合 (mybatis redis)
 ##### 准备
 jdk: 
-1. JAVA_HOME: jdk的根目录
-2. path: %JAVA_HOME%/bin
-3. classpath: .;%JAVA_HOME%/lib
+JAVA_HOME: jdk的根目录
+path: %JAVA_HOME%/bin
+classpath: .;%JAVA_HOME%/lib
 maven: 
-1. MAVEN_HOME: maven的根目录
-2. path: %MAVEN_HOME%/bin
-3. 配置maven本地仓库， mvn 根目录 /conf/setting.xml localRepository
+MAVEN_HOME: maven的根目录
+path: %MAVEN_HOME%/bin
+配置maven本地仓库， mvn 根目录 /conf/setting.xml 
 ###### springboot 开发工具
-1. Eclipse(STS插件) > STS
-2. Intellij IDEA
+Eclipse(STS插件) > STS
+Intellij IDEA
 ###### 目录结构resources
-1. static静态文件
-2. templates: 模板文件(引擎 freemarker, thymeleaf,默认不支持jsp)
-3. application.properties springboot配置文件
+static静态文件
+templates: 模板文件(引擎 freemarker, thymeleaf,默认不支持jsp)
+application.properties springboot配置文件
 ###### springboot web
-1. 原web项目webContext web.xml > war > tomcat
-2. springboot 内置了tomcat, 并且不需要打成war包， 可以在application.properties对端号等服务信息进行配置
+原web项目webContext web.xml > war > tomcat
+springboot 内置了tomcat, 并且不需要打成war包， 可以在application.properties对端号等服务信息进行配置
 ###### springboot 场景
 将各各应用/三方框架设置成了一个个场景 starter, 以后要用哪个选哪个场景，选完之后springboot将所有依赖自动注入，例如 选择“web”, 会将全部依赖自动注入（tomcat json）
 ###### springboot 注解
 @SpringBootApplication: springboot 的主配置类，该注解包含
-1. @SpringBootConfiguration: 包含@Configuration， 代表配置类， 用配置类代替配置文件，
-* 该注解表示该类是一个配置类
-* 自动纳入spring容器里
+@SpringBootConfiguration: 包含@Configuration， 代表配置类， 用配置类代替配置文件，
+该注解表示该类是一个配置类
+自动纳入spring容器里
 ```java
 @Configuration//表示A是一个配置类
 public class A
 ```
-2. @EnableAutoConfiguration：该注解使springboot可以自动配置(约定由于配置):
-* ```@AutoConfigurationPackage```可以找到@SpringBootConfiguration所在包名，自动扫描包和子包，全部纳入spring容器，不用去配置scan，不用写类似```<context:component-scan base-package="com.company.demo1"/>```的配置
+@EnableAutoConfiguration：该注解使springboot可以自动配置(约定由于配置):
+```@AutoConfigurationPackage```可以找到@SpringBootConfiguration所在包名，自动扫描包和子包，全部纳入spring容器，不用去配置scan，不用写类似```<context:component-scan base-package="com.company.demo1"/>```的配置
+具体实现代码:
+```java
+(new AutoConfigurationPackages.PackageImport(metadata)).getPackageName()
+```
+其中metadata就是有@SpringBootApplication注解的类的reference，获取到的包名(getPackageName)就是有该注解的类所在的包名
+```@Import({AutoConfigurationImportSelector.class})```，再spring boot 启动时，会根据META-INF/spring.factories找到相应的第三方依赖，并将这些依赖引入本项目
 具体实现代码：
-    ```java
-    (new AutoConfigurationPackages.PackageImport(metadata)).getPackageName()
-    ```
-    其中metadata就是有@SpringBootApplication注解的类的reference，获取到的包名(getPackageName)就是有该注解的类所在的包名
-* ```@Import({AutoConfigurationImportSelector.class})```，再spring boot 启动时，会根据META-INF/spring.factories找到相应的第三方依赖，并将这些依赖引入本项目
-具体实现代码：
-    ```java
-        List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes);
-    ```
-    ```java
-        Enumeration<URL> urls = classLoader != null ? classLoader.getResources("META-INF/spring.factories") : ClassLoader.getSystemResources("META-INF/spring.factories");
-    ```
+```java
+List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes);
+```
+```java
+Enumeration<URL> urls = classLoader != null ? classLoader.getResources("META-INF/spring.factories") : ClassLoader.getSystemResources("META-INF/spring.factories");
+```
 总结：编写项目时，一般会对自己写的代码以及三方依赖进行配置，但是springboot可以自动配置，其中自己写的代码通过```@AutoConfigurationPackage```自动配置，三方依赖依靠AutoConfigurationImportSelector.class进行配置
 ###### application.properties配置文件
 可以对约定好的一些配置进行自定义修改，例如
@@ -72,15 +72,15 @@ server.port=8888
 ###### yml
 yml不同于xml不是一个标记文档
 注意：
-* : 后面一定要接空格
-* 缩进代表层级
-* yml字符串默认可以不加引号，如果加上""有转义的效果，其它没有
-* yml中的[]可以省略，{}不能省
+: 后面一定要接空格
+缩进代表层级
+yml字符串默认可以不加引号，如果加上""有转义的效果，其它没有
+yml中的[]可以省略，{}不能省
 写法：
 ```yml
 server:
-  port: 9999
- ```
+    port: 9999
+```
  ###### yml注入
  entity:
  ```java
@@ -145,137 +145,137 @@ student.age=18
 ###### ConfigurationProperties和Value
 以上的Student类是通过ConfigurationProperties注解绑定到student(yml或properties中定义)，同时也可以用String @Value注解注入，<font color="red">但优先级是ConfigurationProperties高</font>，同样可以达到互补的目的
 注意：
-* ConfigurationProperties可以使用松散语法例如nickName可以改成nick-name
-* @Value可以SpEl表达式
-    ```java
-    public class Student {
-        @Value("${student.username}")
-        private String name;
-    }
-    ```
-* JSR303校验ConfigurationProperties是支持的(会报错)，value不支持(不会报错)
-    ```java
-    @ConfigurationProperties(prefix = "student")
-    @Validated
-    public class Student {
-        @Value("${student.username}")
-        private String name;
-        @Email
-        private String email;
-    ```
-    ```yml
-    student:
-    username: 傻七
-    email: 123131是是是
-    ```
-    此时编译会报错，不是邮箱格式
-* ConfigurationProperties可以注入简单类型
+ConfigurationProperties可以使用松散语法例如nickName可以改成nick-name
+@Value可以SpEl表达式
+```java
+public class Student {
+    @Value("${student.username}")
+    private String name;
+}
+```
+JSR303校验ConfigurationProperties是支持的(会报错)，value不支持(不会报错)
+```java
+@ConfigurationProperties(prefix = "student")
+@Validated
+public class Student {
+    @Value("${student.username}")
+    private String name;
+    @Email
+    private String email;
+```
+```yml
+student:
+username: 傻七
+email: 123131是是是
+```
+此时编译会报错，不是邮箱格式
+ConfigurationProperties可以注入简单类型
 ###### @PropertySource注解
 以上application.properties和application.yml都是boot自动加载的，如果想加载其它的文件可以用@PropertySource注解注解，但该注解暂时只支持properties文件
 ###### @ImportResource
-* spring自动装配/自动配置
-* spring等配置文件，默认会被spring boot自动配置好
-* 如果自己想写spring配置文件，又想让springboot识别比如写一个spring.xml
-    ```xml
-    <bean id="studentService" class="com.wmf.hello.service.StudentService">
-    </bean>
-    ```
-    业务逻辑层
-    ```java
-    public class StudentService {
+spring自动装配/自动配置
+spring等配置文件，默认会被spring boot自动配置好
+如果自己想写spring配置文件，又想让springboot识别比如写一个spring.xml
+```xml
+<bean id="studentService" class="com.wmf.hello.service.StudentService">
+</bean>
+```
+业务逻辑层
+```java
+public class StudentService {
+}
+```
+Test
+```java
+@Autowired
+ApplicationContext context; //string 容器
+@Test
+public void test () {
+    StudentService studentService = (StudentService) context.getBean("studentService");
+    System.out.println(studentService);
+}
+```
+输出结果```No bean named 'studentService' available```
+解决方法
+```java
+@ImportResource(locations = {"classpath:spring.xml"})
+@SpringBootApplication
+public class HelloApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(HelloApplication.class, args);
     }
-    ```
-    Test
-    ```java
-    @Autowired
-    ApplicationContext context; //string 容器
-    @Test
-    public void test () {
-        StudentService studentService = (StudentService) context.getBean("studentService");
-        System.out.println(studentService);
-    }
-    ```
-    输出结果```No bean named 'studentService' available```
-* 解决方法
-    ```java
-    @ImportResource(locations = {"classpath:spring.xml"})
-    @SpringBootApplication
-    public class HelloApplication {
-        public static void main(String[] args) {
-            SpringApplication.run(HelloApplication.class, args);
-        }
-    }
-    ```
-    加上```@ImportResource(locations = {"classpath:spring.xml"})```程序就可以识别配置文件了，但是这种做法不推荐，使用注解配置最好
+}
+```
+加上```@ImportResource(locations = {"classpath:spring.xml"})```程序就可以识别配置文件了，但是这种做法不推荐，使用注解配置最好
 ##### 使用配置类
-* 上面的做法不推荐
-* 推荐使用@Configuration和@Bean
-    com.wmf.hello.Config.AppConfig:
-    ```java
-    @Configuration
-    public class AppConfig {
-        @Bean
-        public StudentService studentService () {
-            StudentService studentService = new StudentService();
-            return studentService;
-        }
+上面的做法不推荐
+推荐使用@Configuration和@Bean
+com.wmf.hello.Config.AppConfig:
+```java
+@Configuration
+public class AppConfig {
+    @Bean
+    public StudentService studentService () {
+        StudentService studentService = new StudentService();
+        return studentService;
     }
-    ```
-    这种写法与上面的spring.xml效果一样
+}
+```
+这种写法与上面的spring.xml效果一样
 ##### 全局配置文件中的占位符
-* application.yml
-    ```yml
-    student:
-        username: ${random.value}
-    ```
-    结果生成一串随机数
-* application.yml和application.properties互通
-    application.properties:
-    ```properties
-    student.user.name=wmf
-    ```
-    application.yml:
-    ```yml
-    student:
-        username: ${student.user.name}
-    ```
+application.yml
+```yml
+student:
+    username: ${random.value}
+```
+结果生成一串随机数
+application.yml和application.properties互通
+application.properties:
+```properties
+student.user.name=wmf
+```
+application.yml:
+```yml
+student:
+    username: ${student.user.name}
+```
 ##### 多环境设置和切换(profile)
 默认情况下boot读取的是application.properties配置文件
-* properties多个文件：
-    application-dev.properties 开发
-    application-test.properties 测试
-    application.properties 正式
-    比如现在要切换开发环境：
-    直接在application.properties配置：
-    ```properties
-    spring.profiles.active=dev
-    ```
-    那么boot此时遵循的就是application-dev.properties配置的内容
-* yml多环境
-    profiles是关键
-    ```yml
-    server:
-        port: 8888
-    spring:
-        profiles:
-            active: dev #选用开发配置
-    ---
-    server:
-        port: 7777
-    spring:
-        rofiles: dev
-    ---
-    server:
-        port: 4444
-    spring:
-        profiles: test
-    ```
+properties多个文件：
+application-dev.properties 开发
+application-test.properties 测试
+application.properties 正式
+比如现在要切换开发环境：
+直接在application.properties配置：
+```properties
+spring.profiles.active=dev
+```
+那么boot此时遵循的就是application-dev.properties配置的内容
+yml多环境
+profiles是关键
+```yml
+server:
+    port: 8888
+spring:
+    profiles:
+        active: dev #选用开发配置
+---
+server:
+    port: 7777
+spring:
+    rofiles: dev
+---
+server:
+    port: 4444
+spring:
+    profiles: test
+```
 ###### 命令行动态切换环境
-* 编辑器命令行方式
-    run with configuration
-    idea: 直接在active profiles里加dev
-    eclipse: run with configuration->arguments填写```--spring.profiles.active=dev```
-* jar包方式
+编辑器命令行方式
+run with configuration
+idea: 直接在active profiles里加dev
+eclipse: run with configuration->arguments填写```--spring.profiles.active=dev```
+jar包方式
 ##### 配置项目名
 ```server.servlet.context-path=/wmf```
 ##### 外部配置文件

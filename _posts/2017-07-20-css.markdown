@@ -2,7 +2,7 @@
 layout:     post
 title:      "css基础"
 subtitle:   " \"编辑器配合预览查看效果好\""
-date:       2018-07-20 19:28:00
+date:       2017-07-20 19:28:00
 author:     "wmf"
 header-img: "img/common.jpg"
 catalog: true
