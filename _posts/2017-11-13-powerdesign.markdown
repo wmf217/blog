@@ -8,8 +8,7 @@ header-img: "img/post-bg-os-metro.jpg"
 catalog: true
 tags:
     - mysql
-    - 软件
-    - PowerDesign
+    - php
 ---
 ### 1. 导出sql文件
  sql文件只要结构不要数据

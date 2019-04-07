@@ -2,7 +2,7 @@
 layout:     post
 title:      "Hibernate 学习简记"
 subtitle:   " \"Hibernate 学习简记\""
-date:       2018-04-02 19:25:00
+date:       2018-02-15 19:25:00
 author:     "wmf"
 header-img: "img/in-post/laravel.jpg"
 catalog: true
