@@ -1,0 +1,27 @@
+---
+layout:     post
+title:      "ORM"
+subtitle:   " \"ORM\""
+date:       2018-03-01 19:25:00
+author:     "wmf"
+header-img: "img/in-post/java.jpg"
+catalog: true
+tags:
+    - java
+    - Hibernate
+---
+### ORM
+##### 什么是“持久化” 
+持久（Persistence），即把数据（如内存中的对象）保存到可永久保存的存储设备中（如磁盘）。持久化的主要应用是将内存中的数据存储在关系型的数据库中，当然也可以存储在磁盘文件中、XML数据文件中等等。
+
+##### 什么是 “持久层” 
+持久层（Persistence Layer），即专注于实现数据持久化应用领域的某个特定系统的一个逻辑层面，将数据使用者和数据实体相关联。
+##### 什么是ORM
+即Object-Relationl Mapping，它的作用是在关系型数据库和对象之间作一个映射，这样，我们在具体的操作数据库的时候，就不需要再去和复杂的SQL语句打交道，只要像平时操作对象一样操作它就可以了 。
+
+
+
+
+
+
+
