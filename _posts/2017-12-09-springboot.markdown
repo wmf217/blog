@@ -49,10 +49,7 @@ public class A
 ```
 @EnableAutoConfiguration：该注解使springboot可以自动配置(约定由于配置):
 ```@AutoConfigurationPackage```可以找到@SpringBootConfiguration所在包名，自动扫描包和子包，全部纳入spring容器，不用去配置scan，不用写类似```<context:component-scan base-package="com.company.demo1"/>```的配置
-具体实现代码:
-```java
-(new AutoConfigurationPackages.PackageImport(metadata)).getPackageName()
-```
+具体实现代码: (new AutoConfigurationPackages.PackageImport(metadata)).getPackageName()
 其中metadata就是有@SpringBootApplication注解的类的reference，获取到的包名(getPackageName)就是有该注解的类所在的包名
 ```@Import({AutoConfigurationImportSelector.class})```，再spring boot 启动时，会根据META-INF/spring.factories找到相应的第三方依赖，并将这些依赖引入本项目
 具体实现代码：
@@ -277,7 +274,9 @@ idea: 直接在active profiles里加dev
 eclipse: run with configuration->arguments填写```--spring.profiles.active=dev```
 jar包方式
 ##### 配置项目名
-```server.servlet.context-path=/wmf```
+```
+server.servlet.context-path=/wmf
+```
 ##### 外部配置文件
 比如说放置D盘一个配置文件application.properties内容
 ```properties
