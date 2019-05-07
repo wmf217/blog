@@ -13,38 +13,38 @@ tags:
 文章主要学习线程阀--多线程的交互--阻塞队列
 ### 阻塞队列
 ##### 队列
-1. Queue: 队列，先进先出(FIFO)
-2. Deque: 双端队列。两端都可以进出，当约束从一个口进出时，就形成栈Stack
-3. BlockQueue: 阻塞队列，支持两个附加操作，take-获取队列的线程会等待队列变为非空，put-存储元素的线程会等待队列变为可用（非满）
+Queue: 队列，先进先出(FIFO)
+Deque: 双端队列。两端都可以进出，当约束从一个口进出时，就形成栈Stack
+BlockQueue: 阻塞队列，支持两个附加操作，take-获取队列的线程会等待队列变为非空，put-存储元素的线程会等待队列变为可用（非满）
 ##### 阻塞队列4种处理方式
-1. 抛出异常 add remove element 会抛出异常
-2. 返回特殊值 offer poll peek
-3. 一直阻塞 put take
-4. 超时退出 offer poll
+抛出异常 add remove element 会抛出异常
+返回特殊值 offer poll peek
+一直阻塞 put take
+超时退出 offer poll
 ### 实现
 ##### ArrayBlockingQueue 
 由数组支持的有界阻塞队列 该实现可以设置公平性@TODO
 源码：
 ```java
 /**
-     * Inserts the specified element at the tail of this queue, waiting
-     * for space to become available if the queue is full.
-     *
-     * @throws InterruptedException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     */
-    public void put(E e) throws InterruptedException {
-        checkNotNull(e);
-        final ReentrantLock lock = this.lock;
-        lock.lockInterruptibly();
-        try {
-            while (count == items.length)
-                notFull.await();
-            enqueue(e);
-        } finally {
-            lock.unlock();
-        }
+* Inserts the specified element at the tail of this queue, waiting
+* for space to become available if the queue is full.
+*
+* @throws InterruptedException {@inheritDoc}
+* @throws NullPointerException {@inheritDoc}
+*/
+public void put(E e) throws InterruptedException {
+    checkNotNull(e);
+    final ReentrantLock lock = this.lock;
+    lock.lockInterruptibly();
+    try {
+        while (count == items.length)
+            notFull.await();
+        enqueue(e);
+    } finally {
+        lock.unlock();
     }
+}
 ```
 使用ReentrantLock加锁，<font color="red">所以这个队列本身是线程安全的集合</font>
 ##### LinkedBlockingQueue
@@ -54,28 +54,28 @@ tags:
 ##### DelayQueue
 延时队列，支持优先级和延迟获取，队列中的元素需要实现delayed接口和comparable接口，创建元素后可以指定需要多久才能在队列中获取到该元素
 使用场景：
-1. 缓存系统设计，可以用DelayQueue保存缓存的有效期，然后持续检索队列，如果检测到了数据，说明有效期到了
-2. 定时任务调度，可以通过延迟，定时执行任务，TimeQueue就是使用DelayQueue实现的
+缓存系统设计：可以用DelayQueue保存缓存的有效期，然后持续检索队列，如果检测到了数据，说明有效期到了
+定时任务调度：可以通过延迟，定时执行任务，TimeQueue就是使用DelayQueue实现的
 ##### SynchronousQueue
 同步队列，该队列不存储元素，每一个put必须等待一个take操作，非常适合传递性场景，从一个线程传递给另一个线程
 SynchronousQueue的吞吐量远高于ArrayBlockingQueue和LinkedBlockingQueue
 创建SynchronousQueue有两种方式(TODO):
-1.公平模式：使用公平锁，配合FIFO队列阻塞多余生产者和消费者，内部使用TransferQueue
-2.非公平模式：非公平锁，配合LIFO队列管理多余的生产者和消费者，内部使用TransferStack(这种方式容易造成饥渴)
+公平模式：使用公平锁，配合FIFO队列阻塞多余生产者和消费者，内部使用TransferQueue
+非公平模式：非公平锁，配合LIFO队列管理多余的生产者和消费者，内部使用TransferStack(这种方式容易造成饥渴)
 ```java
 public class SynchronousQueue<E> extends AbstractQueue<E>
-    implements BlockingQueue<E>, java.io.Serializable {
-    private static final long serialVersionUID = -3223113410248163686L;
-    public SynchronousQueue(boolean fair) {
-            transferer = fair ? new TransferQueue<E>() : new TransferStack<E>();
-    }
-    public E take() throws InterruptedException {
-        E e = transferer.transfer(null, false, 0);
-        if (e != null)
-            return e;
-        Thread.interrupted();
-        throw new InterruptedException();
-    }
+implements BlockingQueue<E>, java.io.Serializable {
+private static final long serialVersionUID = -3223113410248163686L;
+public SynchronousQueue(boolean fair) {
+    transferer = fair ? new TransferQueue<E>() : new TransferStack<E>();
+}
+public E take() throws InterruptedException {
+    E e = transferer.transfer(null, false, 0);
+    if (e != null)
+        return e;
+    Thread.interrupted();
+    throw new InterruptedException();
+}
 ```
 可以看到公平模式下使用了TransferQueue，<font color="green">take方法调用的是TransferQueue的transfer方法</font>
 例子1:
