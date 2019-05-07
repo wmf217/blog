@@ -1,0 +1,506 @@
+---
+layout:     post
+title:      "阻塞队列"
+subtitle:   " \"线程阀-多线程的交互\""
+date:       2019-06-02 20:44:00
+author:     "wmf"
+header-img: "img/post-bg-js-version.jpg"
+catalog: true
+tags:
+    - 并发
+---
+## 前言
+文章主要学习线程阀--多线程的交互--阻塞队列
+### 阻塞队列
+##### 队列
+1. Queue: 队列，先进先出(FIFO)
+2. Deque: 双端队列。两端都可以进出，当约束从一个口进出时，就形成栈Stack
+3. BlockQueue: 阻塞队列，支持两个附加操作，take-获取队列的线程会等待队列变为非空，put-存储元素的线程会等待队列变为可用（非满）
+##### 阻塞队列4种处理方式
+1. 抛出异常 add remove element 会抛出异常
+2. 返回特殊值 offer poll peek
+3. 一直阻塞 put take
+4. 超时退出 offer poll
+### 实现
+##### ArrayBlockingQueue 
+由数组支持的有界阻塞队列 该实现可以设置公平性@TODO
+源码：
+```java
+/**
+     * Inserts the specified element at the tail of this queue, waiting
+     * for space to become available if the queue is full.
+     *
+     * @throws InterruptedException {@inheritDoc}
+     * @throws NullPointerException {@inheritDoc}
+     */
+    public void put(E e) throws InterruptedException {
+        checkNotNull(e);
+        final ReentrantLock lock = this.lock;
+        lock.lockInterruptibly();
+        try {
+            while (count == items.length)
+                notFull.await();
+            enqueue(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+```
+使用ReentrantLock加锁，<font color="red">所以这个队列本身是线程安全的集合</font>
+##### LinkedBlockingQueue
+基于链表的无界阻塞队列，相对于ArrayBlockingQueue高效，生产者和消费者端采用了独立的锁来处理(读写分离思想)
+##### PriorityBlockingQueue
+支持优先级的无界阻塞队列，<font color="red">生产者的速度绝对不能快于消费者的速度，否则会导致内存爆了</font>
+##### DelayQueue
+延时队列，支持优先级和延迟获取，队列中的元素需要实现delayed接口和comparable接口，创建元素后可以指定需要多久才能在队列中获取到该元素
+使用场景：
+1. 缓存系统设计，可以用DelayQueue保存缓存的有效期，然后持续检索队列，如果检测到了数据，说明有效期到了
+2. 定时任务调度，可以通过延迟，定时执行任务，TimeQueue就是使用DelayQueue实现的
+##### SynchronousQueue
+同步队列，该队列不存储元素，每一个put必须等待一个take操作，非常适合传递性场景，从一个线程传递给另一个线程
+SynchronousQueue的吞吐量远高于ArrayBlockingQueue和LinkedBlockingQueue
+创建SynchronousQueue有两种方式(TODO):
+1.公平模式：使用公平锁，配合FIFO队列阻塞多余生产者和消费者，内部使用TransferQueue
+2.非公平模式：非公平锁，配合LIFO队列管理多余的生产者和消费者，内部使用TransferStack(这种方式容易造成饥渴)
+```java
+public class SynchronousQueue<E> extends AbstractQueue<E>
+    implements BlockingQueue<E>, java.io.Serializable {
+    private static final long serialVersionUID = -3223113410248163686L;
+    public SynchronousQueue(boolean fair) {
+            transferer = fair ? new TransferQueue<E>() : new TransferStack<E>();
+    }
+    public E take() throws InterruptedException {
+        E e = transferer.transfer(null, false, 0);
+        if (e != null)
+            return e;
+        Thread.interrupted();
+        throw new InterruptedException();
+    }
+```
+可以看到公平模式下使用了TransferQueue，<font color="green">take方法调用的是TransferQueue的transfer方法</font>
+例子1:
+```java
+package com.example.wmf.Queue;
+
+import java.util.PriorityQueue;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Syn {
+    public static void main (String[] args) {
+        System.out.println("begin: " + System.currentTimeMillis()/1000);
+        final SynchronousQueue<String> sq = new SynchronousQueue<>();
+        //final ArrayBlockingQueue<String> sq = new ArrayBlockingQueue<String>(10);
+        //final TransferQueue<String> sq = new LinkedTransferQueue<>();
+        ReentrantLock lock = new ReentrantLock(); //为了保证没次只有一个线程执行run内部程序，其实效果就是单线程
+        for (int i = 0;i<10;i++) {
+            new Thread() {
+                @Override
+                public void run() {
+                    lock.lock();
+                    try {
+                        String input = sq.take();
+                        testDo.doSame(input);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+            }.start();
+        }
+
+        for (int i = 0;i<10;i++) {
+            String input = i + "";
+            try {
+                System.out.println("put string : " + i);
+                sq.put(input);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class testDo {
+    public static void doSame (String input) {
+        System.out.println("handle "+ input +" job begin");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        String output = "handle "+ input +" job finish";
+        System.out.println(output);
+    }
+}
+```
+输出如下：
+```
+begin: 1557138993
+put string : 0
+put string : 1
+handle 0 job begin
+handle 0 job finish
+handle 1 job begin
+put string : 2
+handle 1 job finish
+handle 2 job begin
+put string : 3
+handle 2 job finish
+handle 3 job begin
+put string : 4
+handle 3 job finish
+handle 4 job begin
+put string : 5
+handle 4 job finish
+handle 5 job begin
+put string : 6
+handle 5 job finish
+handle 6 job begin
+put string : 7
+handle 6 job finish
+handle 7 job begin
+put string : 8
+handle 7 job finish
+handle 8 job begin
+put string : 9
+handle 8 job finish
+handle 9 job begin
+handle 9 job finish
+```
+可以看到只有当队列中的值被take出来之后才能再次put,如果把多线程执行的代码注释掉，则输出如下（阻塞住了，程序不会停止）：
+```
+begin: 1557139280
+put string : 0
+```
+例子2(公平性验证):
+Consumer:
+```java
+public class Consumer implements Runnable{
+    private final BlockingQueue<String> tq;
+    public Consumer (BlockingQueue tq) {
+        this.tq = tq;
+    }
+    @Override
+    public void run() {
+        try {
+            System.out.println("Consumer "+Thread.currentThread().getName()+ " " + tq.take());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+Producer:
+```java
+public class Producer implements Runnable{
+    private final BlockingQueue<String> tq;
+    public Producer (BlockingQueue tq) {
+        this.tq = tq;
+    }
+    @Override
+    public void run() {
+        try {
+            for (int j=1;j<=5;j++) {
+                tq.put("your lucky number is " + j);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+main:
+```java
+public static void main(String[] args) throws InterruptedException {
+    SynchronousQueue<String> tq = new SynchronousQueue<>(true);
+    for (int i=0;i<10;i++) {
+        Thread consumer = new Thread(new Consumer(tq));
+        consumer.start();
+        TimeUnit.MILLISECONDS.sleep(1000); //保证线程take执行顺序
+    }
+    TimeUnit.SECONDS.sleep(15); //消费者全部就位在生产
+    Thread producer = new Thread(new Producer(tq));
+    producer.start();
+}
+```
+out:
+```
+Consumer Thread-0 your lucky number is 1
+Consumer Thread-2 your lucky number is 3
+Consumer Thread-4 your lucky number is 5
+Consumer Thread-3 your lucky number is 4
+Consumer Thread-1 your lucky number is 2
+```
+分析：
+该例在生产者生产之前所有进程消费者已经发出take请求，构造队列时参数fair为true，公平模式，所以先会用一个FIFO队列维护消费者，因此0获得1,1获得2,2获得3...，此时如果修改main方法为非公平模式，传递false或不传参构造（默认为false），输出如下
+```
+Consumer Thread-8 your lucky number is 2
+Consumer Thread-6 your lucky number is 4
+Consumer Thread-9 your lucky number is 1
+Consumer Thread-7 your lucky number is 3
+Consumer Thread-5 your lucky number is 5
+```
+非公平模式下利用LIFO维护消费者，所以最后一个发出take的消费者Thread-9获得了生产出来的1
+##### LinkedBlockingDeque
+链表支持的无界双向阻塞队列。可以从前后添加或移除，比如有addFirst和addLast等方法
+##### LinkedTransferQueue
+是一个由链表结构组成的无界传输阻塞队列
+实现了BlockingDeque接口
+>Doug Lea 这样评价它：TransferQueue是一个聪明的队列，它是 ConcurrentLinkedQueue，SynchronousQueue(<font color="green">公平模式</font>), LinkedBlockingQueue的超集
+
+它是一个多面手，高性能的一个组合体
+比如说：上面介绍SynchronousQueue时提到，<font color="green">take方法调用的是TransferQueue的transfer方法</font>，所以当使用LinkedTransferQueue的transfer它的效果和SynchronousQueue几乎一样（如果队列不为空则阻塞），而使用LinkedTransferQueue的put方法,则和LinkedBlockingQueue一样了（可以向队列中添加无界的元素）
+>transfer的算法比较复杂，大概意思是所谓双重数据结构（dual data structures），之所以叫双重，主要原因是方法都是通过两个步骤完成的：保留和完成。比如，消费者线程从一个队列取元素，发现队列是空，它就生成一个空元素放入队列，所谓空元素就是数据项字段为空，然后消费者在这个字段上继续等待，叫做*保留*，直到一个生产者意欲向队列中放入一个元素，这里它发现最前面的元素的数据项字段为NULL，它就直接把数据填充到这个元素中，即*完成*（元素的传送）
+
+transfer方法提供了线程之间直接交换数据的捷径方法
+1. transfer(E e)，如果当前有一个消费者正在等待，则立即移交，否则阻塞（SynchronousQueue的put）
+2. tryTransfer(E e)，有消费者等待则传送，无则返回false
+3. tryTransfer(E e, long timeout, TimeUnit unit)，与上面几乎一样只不过在没有的情况下会等待一段规定时间
+4. hasWaitingConsumer()，查看是否有等待的消费者
+5. getWaitingConsumerCount()
+6. ~~size()~~ 不准确
+
+###### 源码
+```java
+/**
+    * Transfers the element to a consumer, waiting if necessary to do so.
+    *
+    * <p>More precisely, transfers the specified element immediately
+    * if there exists a consumer already waiting to receive it (in
+    * {@link #take} or timed {@link #poll(long,TimeUnit) poll}),
+    * else inserts the specified element at the tail of this queue
+    * and waits until the element is received by a consumer.
+    *
+    * @throws NullPointerException if the specified element is null
+    */
+public void transfer(E e) throws InterruptedException {
+    if (xfer(e, true, SYNC, 0) != null) {
+        Thread.interrupted(); // failure possible only due to interrupt
+        throw new InterruptedException();
+    }
+}
+``` 
+###### 例子
+Consumer:
+```java
+package com.example.wmf.Queue.Transfer;
+import java.util.concurrent.TransferQueue;
+public class Consumer implements Runnable{
+    private final TransferQueue<String> tq;
+    public Consumer (TransferQueue tq) { //接受一个队列作为自己的参数
+        this.tq = tq;
+    }
+    @Override
+    public void run() {
+        try {
+            for (int i=0;i<10;i++) {
+                System.out.println("Consumer "+Thread.currentThread().getName()+ " " + tq.take());
+                TimeUnit.SECONDS.sleep(1); //等一秒再拿下一个
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+```                                   
+Producer:
+```java
+package com.example.wmf.Queue.Transfer;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TransferQueue;
+public class Producer implements Runnable{
+    private final TransferQueue<String> tq;
+    public Producer (TransferQueue tq) {//接受一个队列作为自己的参数
+        this.tq = tq;
+    }
+    @Override
+    public void run() {
+        int i = 0;
+        try {
+            while (true) {
+                //if (tq.hasWaitingConsumer()) {
+                    i++;
+                    //生产了一条记录并插入队列
+                    System.out.println("transfer " + i);
+                    tq.transfer("your lucky number is " + i);
+                //}
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+main:
+```java
+public static void main(String[] args) {
+    LinkedTransferQueue<String> tq = new LinkedTransferQueue<>();
+    Thread producer = new Thread(new Producer(tq));
+    producer.setDaemon(true); //守护进程
+    producer.start();
+    Thread consumer = new Thread(new Consumer(tq));
+    consumer.start();
+}
+```
+out:
+```
+transfer 1
+Consumer Thread-1 your lucky number is 1
+transfer 2
+Consumer Thread-1 your lucky number is 2
+transfer 3
+Consumer Thread-1 your lucky number is 3
+....
+```
+分析：
+使用transfer方法一定上一个transfer的参数被消费者take走才能执行下一个transfer
+所以transfer方法在队列不为空时是阻塞的，这里也不用考虑是否FIFO，因为只有一个元素
+那么接下来来验证下TransferQueue是否是FIFO，将生产者的transfer修改为put
+out:
+```
+transfer 1
+Consumer Thread-1 your lucky number is 1
+transfer 2
+transfer 3
+transfer 4
+Consumer Thread-1 your lucky number is 2
+transfer 5
+transfer 6
+transfer 7
+Consumer Thread-1 your lucky number is 3
+```
+分析：take2时，队列中已经有1-4 4个元素，取出的是2，往后take的值依次是3,4,5,6
+可见LinkedTransferQueue是符合FIFO的
+如果对以上代码再作如下修改：
+Consumer:
+```java
+@Override
+public void run() {
+    try {
+        System.out.println("Consumer "+Thread.currentThread().getName()+ " " + tq.take());
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}
+```
+Producer:
+```java
+@Override
+public void run() {
+    int i = 0;
+    try {
+        while (true) {
+            if (tq.hasWaitingConsumer()) {
+                i++;
+                tq.transfer("your lucky number is " + i);
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}
+```
+main:
+```java
+LinkedTransferQueue<String> tq = new LinkedTransferQueue<>();
+Thread producer = new Thread(new Producer(tq));
+producer.setDaemon(true); //守护进程
+producer.start();
+for (int i=0;i<5;i++) {
+    Thread consumer = new Thread(new Consumer(tq));
+    consumer.start();
+}
+```
+out1:
+```
+Consumer Thread-1 your lucky number is 1
+Consumer Thread-3 your lucky number is 2
+Consumer Thread-2 your lucky number is 3
+Consumer Thread-4 your lucky number is 4
+Consumer Thread-5 your lucky number is 5
+```
+out2:
+```
+Consumer Thread-2 your lucky number is 1
+Consumer Thread-4 your lucky number is 4
+Consumer Thread-3 your lucky number is 3
+Consumer Thread-1 your lucky number is 2
+Consumer Thread-5 your lucky number is 5
+```
+分析：
+两次结果不一样，之前已经证明了，1,2,3,4,5的transfer顺序
+可是输出的结果却没有排序
+而且消费者的线程k不一定对应生产出来的i
+接下来分析一下原因
+首先各个线程执行的快慢不能保证(这是一定不能保证的)
+其次有可能是当有多个消费者同时要消费时，优先级无法保证
+（不一定由哪个消费者线程获取到队列中的这个唯一元素，这是一种猜测接下来证实）
+可以把生产者生产的时间间隔设长，让消费者竞争看一下：
+Producer:
+```java
+int i = 0;
+try {
+    TimeUnit.SECONDS.sleep(3);//睡一会让所有消费者都等着
+    while (true) {
+        if (tq.hasWaitingConsumer()) {
+            i++;
+            tq.transfer("your lucky number is " + i);
+        }
+    }
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}
+```
+out:
+```
+Consumer Thread-2 your lucky number is 1
+Consumer Thread-1 your lucky number is 2
+Consumer Thread-4 your lucky number is 4
+Consumer Thread-3 your lucky number is 3
+Consumer Thread-5 your lucky number is 5
+```
+分析：
+可以看到首先是Thread-2 take到了第一个元素1，而Thread-1拿到了2
+Thread-3拿到了第三个元素3,输出在4后面是因为线程执行的慢了
+而thread-1晚于Thread-2有两种可能：
+一种是thread-1 发出take请求本来就慢于Thread-2
+一种是thread-1 发出take请求比较快，但是1元素还是被Thread-2争夺到了
+所以还是无法确定TransferQueue是否公平
+如下修改：
+Producer:
+```java
+TimeUnit.SECONDS.sleep(10); //多睡一会让消费者就位
+```
+Consumer:
+```java
+for (int i=0;i<10;i++) {
+    Thread consumer = new Thread(new Consumer(tq));
+    consumer.start();
+    TimeUnit.MILLISECONDS.sleep(500); //少睡一会让thread顺序去执行take
+}
+```
+out:
+```
+Consumer Thread-2 your lucky number is 2
+Consumer Thread-4 your lucky number is 4
+Consumer Thread-6 your lucky number is 6
+Consumer Thread-8 your lucky number is 8
+Consumer Thread-10 your lucky number is 10
+Consumer Thread-1 your lucky number is 1
+Consumer Thread-9 your lucky number is 9
+Consumer Thread-7 your lucky number is 7
+Consumer Thread-5 your lucky number is 5
+Consumer Thread-3 your lucky number is 3
+```
+多试几次，得到的结果类似，10秒之后生产者开始很快的循环生产数据
+所有消费者几乎同时反应，所以执行的先后顺序很难保证
+但每个消费者start的时间间隔500ms，基本可以保证线程是按照k的先后来take的
+take到的值i和自己的k对的上，所以结论
+**TransferQueue是公平模式的**
+
+
+
