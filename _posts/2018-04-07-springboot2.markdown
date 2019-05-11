@@ -4,7 +4,7 @@ title:      "springboot practice"
 subtitle:   " \"springboot practice\""
 date:       2018-04-07 19:25:00
 author:     "wmf"
-header-img: "img/in-post/java.jpg"
+header-img: "img/java.jpg"
 catalog: true
 tags:
     - java

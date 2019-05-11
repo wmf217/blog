@@ -4,7 +4,7 @@ title:      "springboot 学习笔记"
 subtitle:   " \"springboot 学习笔记\""
 date:       2017-12-09 19:25:00
 author:     "wmf"
-header-img: "img/in-post/laravel.jpg"
+header-img: "img/java.jpg"
 catalog: true
 tags:
     - java

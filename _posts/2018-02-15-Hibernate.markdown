@@ -4,7 +4,7 @@ title:      "Hibernate 学习简记"
 subtitle:   " \"Hibernate 学习简记\""
 date:       2018-02-15 19:25:00
 author:     "wmf"
-header-img: "img/in-post/laravel.jpg"
+header-img: "img/java.jpg"
 catalog: true
 tags:
     - java

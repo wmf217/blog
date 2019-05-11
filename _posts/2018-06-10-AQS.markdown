@@ -1,0 +1,15 @@
+---
+layout:     post
+title:      "AQS"
+subtitle:   " \"AbstractQueuedSynchronizer\""
+date:       2018-06-10 20:44:00
+author:     "wmf"
+header-img: "img/java.jpg"
+catalog: true
+tags:
+    - 并发
+---
+### AQS
+AbstractQueuedSynchronizer(AQS)是java.util.concurrent的核心组件之一，它为并发提供了一组公共的*基础设置*
+
+

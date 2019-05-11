@@ -4,7 +4,7 @@ title:      "spring 学习笔记"
 subtitle:   " \"spring 学习笔记\""
 date:       2018-03-15 19:25:00
 author:     "wmf"
-header-img: "img/in-post/laravel.jpg"
+header-img: "img/java.jpg"
 catalog: true
 tags:
     - java

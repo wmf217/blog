@@ -2,7 +2,7 @@
 layout:     post
 title:      "面向对象的设计原则"
 subtitle:   " \"面向对象的设计原则\""
-date:       2019-05-02 20:44:00
+date:       2018-05-02 20:44:00
 author:     "wmf"
 header-img: "img/post-bg-js-version.jpg"
 catalog: true

@@ -2,9 +2,9 @@
 layout:     post
 title:      "阻塞队列"
 subtitle:   " \"线程阀-多线程的交互\""
-date:       2019-06-02 20:44:00
+date:       2018-06-02 20:44:00
 author:     "wmf"
-header-img: "img/post-bg-js-version.jpg"
+header-img: "img/java.jpg"
 catalog: true
 tags:
     - 并发
