@@ -1,0 +1,295 @@
+---
+layout:     post
+title:      "Future"
+subtitle:   " \"Future\""
+date:       2018-07-08 20:44:00
+author:     "wmf"
+header-img: "img/java.jpg"
+catalog: true
+tags:
+    - concurrency
+---
+## prologue
+this section will show how Future works
+by the annotation of interface Future，it says:
+>future represent the result of asynchronous computation, 
+methods are provided to check if the computation is completed
+
+motheds are as follows, cancel/isCancelled/isDone/get<br>
+it is clear this interface is designed for asynchronous work and obtain future result
+## main
+there are two important element in Future, one is the "state" updated via CAS to track 
+completion, along with a simple Treiber stack to hold waiting threads, there is a special 
+section introduce [Treiber stack](http://www.mingf.wang/2018/06/22/Treiber-Stack/) before
+this section will ignore the waiting threads, only try to complish an simple implement of 
+Future and make it realy work, name it Promise
+## callable&runable
+this two are both parameter of Future, you can offer callable or runable to run,
+while Future is mean to get the result which only callable can return, so when offer
+the runable, must determine a special result, in fact, it will transitions to a
+callable
+```java
+class Promise<V> implements Future, Runnable {
+    private Callable<V> callable;
+    Promise (Callable<V> callable) {
+        this.callable = callable;
+    }
+    Promise (Runnable runnable, V result) {
+        this.callable = Executors.callable(runnable, result);
+    }
+}
+```
+to implements Runnable is the way to offer it to a thread
+## state&runner
+use (int)state to track run state of this task, initially NEW, when completion is done
+ transitions to COMPLETING<br>
+use a runner to record which Thread to run this task and a outcome
+to store the result
+```java
+private int state;
+private static final int NEW          = 0;
+private static final int COMPLETING   = 1;
+private static final int CANCEL   = 2;
+private Thread runner;
+private V outcome;
+```
+## run 
+by override the run, the Promise can be handed over to a
+Thread to run
+```java
+@Override
+public void run() {
+    runner = Thread.currentThread();
+    try {
+        V r = callable.call();
+        set(r);
+    } catch (Exception e) {
+        //to some
+    }
+}
+private void set (V result) {
+    outcome = result;
+    state = COMPLETING;
+}
+```
+## run 
+Waits if necessary for the computation to complete, and then
+retrieves its result, therefore we use an infinite cycle, to 
+retrieves the state and if completed, break and return the result
+```java
+@Override
+public Object get() throws InterruptedException, ExecutionException {
+    for (;;) {
+        if (state==COMPLETING) {
+            return outcome;
+        }
+    }
+}
+```
+# test1
+```java
+Callable<String> callable = new Callable<String>() {
+    @Override
+    public String call() throws Exception {
+        System.out.println("call begin");
+        Thread.currentThread().sleep(5000);
+        System.out.println("call end");
+        return "ok";
+    }
+};
+Promise<String> p = new Promise<>(callable);
+new Thread(p).start();
+System.out.println(p.get());
+```
+then console output 
+```
+call begin
+call end
+```
+never get the result! it is the visibility question,so 
+this field needs to be decorated with volatile, so we put
+```java
+private volatile int state;
+```
+then get the expected results
+```
+call begin
+call end
+ok
+```
+the volatile keyword in the Java language only guarantees variable 
+visibility, but not atomicity, this should make you pause, to guarantee
+atomicity, we can use varhander, the code will be as follows
+```java
+class Promise<V> implements Runnable{
+    private Callable<V> callable;
+    private volatile int state;
+    private static final int NEW          = 0;
+    private static final int COMPLETING   = 1;
+    private static final int CANCEL   = 2;
+    private V outcome;
+    private volatile Thread runner;
+    Promise (Callable<V> callable) {
+        this.callable = callable;
+    }
+    Promise (Runnable runnable, V result) {
+        this.callable = Executors.callable(runnable, result);
+    }
+
+    public void run() {
+        if (state!=NEW||!RUNNER.compareAndSet(this, null, Thread.currentThread()))
+            return;
+        try {
+            V r = callable.call();
+            set(r);
+        } catch (Exception e) {
+            //to some
+        }
+    }
+
+    private void set (V result) {
+        if (STATE.compareAndSet(this, NEW, COMPLETING))
+            outcome = result;
+
+    }
+
+    public Object get() throws InterruptedException, ExecutionException {
+        for (;;) {
+            if (state==COMPLETING) {
+                return outcome;
+            }
+        }
+    }
+
+    public static final VarHandle STATE;
+    public static final VarHandle RUNNER;
+    static {
+        try {
+            MethodHandles.Lookup l = MethodHandles.lookup(); //get a lookup
+            STATE = l.findVarHandle(Promise.class, "state", int.class);
+            RUNNER = l.findVarHandle(Promise.class, "runner", Thread.class);
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+}
+```
+in the code above, we simply implement an asynchronous computation, but there is a
+quesstion,there may be more than one thread that is waitting for the 'get' returns
+in their own thread, they all infinite cycle, which is a waste of resources
+<br>
+therefore, now we should use a stack(Treiber stack) to store all waiting threads, and block them 
+until the computation is finally completed
+>simple linked list nodes to record waiting threads in a Treiber stack
+```java
+private volatile WaitNode waiters;
+static final WaitNode {
+    public Thread thread;
+    public WaitNode next;
+    WaitNode () {
+        thread = Thread.currentThread();
+    }
+}
+```
+the final code will be like this:
+```java
+class Promise<V> implements Runnable{
+    private Callable<V> callable;
+    private volatile int state;
+    private static final int NEW          = 0;
+    private static final int COMPLETING   = 1;
+    private static final int CANCEL   = 2;
+    private V outcome;
+    private volatile Thread runner;
+    private volatile WaitNode waiters;
+    Promise (Callable<V> callable) {
+        this.callable = callable;
+    }
+    Promise (Runnable runnable, V result) {
+        this.callable = Executors.callable(runnable, result);
+    }
+
+    static final class WaitNode {
+        volatile Thread thread;
+        volatile WaitNode next;
+        WaitNode () {
+            thread = Thread.currentThread();
+        }
+    }
+
+    public void run() {
+        if (state!=NEW||!RUNNER.compareAndSet(this, null, Thread.currentThread()))
+            return;
+        try {
+            V r = callable.call();
+            set(r);
+        } catch (Exception e) {
+            //to some
+        }
+    }
+
+    private void set (V result) {
+        if (STATE.compareAndSet(this, NEW, COMPLETING))
+            outcome = result;
+        finsh();
+    }
+
+    private void finsh () {
+        for (WaitNode q; (q = waiters) != null;) {
+            if (WAITERS.weakCompareAndSet(this, q, null)) {
+                for (;;) {
+                    Thread t = q.thread;
+                    if (t != null) {
+                        q.thread = null;
+                        LockSupport.unpark(t);
+                    }
+                    WaitNode next = q.next;
+                    if (next == null)
+                        break;
+                    q.next = null; // unlink to help gc
+                    q = next;
+                }
+                break;
+            }
+        }
+        callable = null;        // to reduce footprint
+    }
+
+    public Object get() {
+        WaitNode q = null;
+        Boolean queued = false;
+        for (;;) {
+            if (state==COMPLETING) {
+                return outcome;
+            } else if (q == null) {
+                q = new WaitNode();
+            } else if (!queued) {
+                queued = WAITERS.compareAndSet(this, q.next=waiters, q);
+            } else {
+                LockSupport.park();
+            }
+        }
+    }
+
+    public static final VarHandle STATE;
+    public static final VarHandle RUNNER;
+    public static final VarHandle WAITERS;
+    static {
+        try {
+            MethodHandles.Lookup l = MethodHandles.lookup(); //get a lookup
+            STATE = l.findVarHandle(Promise.class, "state", int.class);
+            RUNNER = l.findVarHandle(Promise.class, "runner", Thread.class);
+            WAITERS = l.findVarHandle(Promise.class, "waiters", WaitNode.class);
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+}
+```
+                                                   
+
+
+
+
+
+
