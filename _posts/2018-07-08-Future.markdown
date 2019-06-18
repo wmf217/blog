@@ -181,6 +181,7 @@ in their own thread, they all infinite cycle, which is a waste of resources
 therefore, now we should use a stack(Treiber stack) to store all waiting threads, and block them 
 until the computation is finally completed
 >simple linked list nodes to record waiting threads in a Treiber stack
+
 ```java
 private volatile WaitNode waiters;
 static final WaitNode {
