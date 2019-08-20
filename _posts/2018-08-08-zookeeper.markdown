@@ -4,7 +4,7 @@ title:      "zookeeper"
 subtitle:   " \"zookeeper搭建记录\""
 date:       2018-07-08 20:44:00
 author:     "wmf"
-header-img: "img/java.jpg"
+header-img: "img/in-post/bigdata.jpg"
 catalog: true
 tags:
     - java
