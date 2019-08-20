@@ -10,17 +10,17 @@ tags:
     - java
 ---
 ## build
-su - *更换root账号*
-service iptables stop *关闭防火墙*
-chkconfig iptables off *永久关闭防火墙*
-vi /etc/ssh/sshd_config *打开sshd配置*
-service sshd restart *重启sshd*
-sudo passwd *修改密码*
-yum -y install lrzsz *安装lrzsz*
+su - *更换root账号*<br/>
+service iptables stop *关闭防火墙*<br/>
+chkconfig iptables off *永久关闭防火墙*<br/>
+vi /etc/ssh/sshd_config *打开sshd配置*<br/>
+service sshd restart *重启sshd*<br/>
+sudo passwd *修改密码*<br/>
+yum -y install lrzsz *安装lrzsz*<br/>
 **上传jdk.tar.gz**
-mkdir -p /export/server
-tar -zxvf jdk.tar.gz *解压压缩包*
-rm -rf jdk.tar.gz *删除压缩包*
+mkdir -p /export/server<br/>
+tar -zxvf jdk.tar.gz *解压压缩包*<br/>
+rm -rf jdk.tar.gz *删除压缩包*<br/>
 ## ENV
 vi /etc/profile
 ```
@@ -31,16 +31,16 @@ export PATH=$PATH:$JAVA_HOME/bin
 
 source /etc/profile *重新加载环境变量*
 ## zookeeper
-tar -zxvf zoopkeeper.tar.gz *解压*
-mv zookeeper.1.11 zookeeper *重命名*
-cd /zookeeper/conf
-cp cp zoo_sample.cfg zoo.cfg *复制文件*
+tar -zxvf zoopkeeper.tar.gz *解压*<br/>
+mv zookeeper.1.11 zookeeper *重命名*<br/>
+cd /zookeeper/conf<br/>
+cp cp zoo_sample.cfg zoo.cfg *复制文件*<br/>
 vi zoo.cfg *修改配置文件*
 ```
 dataDir=/export/data/zkdata
 server.1=主机名:2888:3888
 ```
-cd /export/data/zkdata *打开之前配置的地址*
+cd /export/data/zkdata *打开之前配置的地址*<br/>
 echo 1 > myid *新建myid文件并写入id*
 ## start
 /export/server/zookeeper/bin/zkServer.sh start
@@ -79,34 +79,34 @@ Znode修改的事务ID,即每次对znode的修改都会更新mzxid
 如果为0说明改节点是一个永久节点， 如果有值则说明这是一个临时节点且存储了客户端连接的session_id
 ## shell基本操作
 ##### 客户端连接zookeeper
-cd /export/server/zookeeper/bin
-./zkCli.sh
-ls /
+cd /export/server/zookeeper/bin<br/>
+./zkCli.sh<br/>
+ls /<br/>
 ##### 创建节点
-create [-s] [-e] path data acl
--s 序列化
--e 临时节点
+create [-s] [-e] path data acl<br/>
+-s 序列化<br/>
+-e 临时节点<br/>
 ##### 读取节点
-ls path [watch]
-ls 可以列举出指定目录下的子节点，只有一级
-get path [watch]
-get可以查看数据和事务ID、创建时间等信息
-ls2 path [watch]
-节点信息+子节点，但是它查看不到数据
+ls path [watch]<br/>
+ls 可以列举出指定目录下的子节点，只有一级<br/>
+get path [watch]<br/>
+get可以查看数据和事务ID、创建时间等信息<br/>
+ls2 path [watch]<br/>
+节点信息+子节点，但是它查看不到数据<br/>
 ##### 更新节点
-set path data [version]
+set path data [version]<br/>
 ##### 删除节点
-delete path [version]
-Rmr path 递归删除
+delete path [version]<br/>
+Rmr path 递归删除<br/>
 ##### QUOTA
-setquota -n|-b val path  *(add limit to a node)*
--n 子节点的最大个数
--b 数据值的长度
-val 所设的值
-path 路径
+setquota -n|-b val path  *(add limit to a node)*<br/>
+-n 子节点的最大个数<br/>
+-b 数据值的长度<br/>
+val 所设的值<br/>
+path 路径<br/>
 ##### history
-之前执行的命令,命令前有编号
-可以通过redo+编号重新执行
+之前执行的命令,命令前有编号<br/>
+可以通过redo+编号重新执行<br/>
 ## watch
 ##### 一次性触发
 事件触发监听，一个watch event会被发送到设置监听的客户端，这种效果是一次性的，后续再发生相同的事件，不会再次触发
@@ -119,17 +119,17 @@ WatchedEvent包含三个基本属性
 ##### 先注册先触发
 先注册先触发
 ## 事件类型
-EventType.NodeCreated:节点创建
-EventType.NodeDataChanged:节点数据变更
-EventType.NodeChildrenChanged:子节点变更
+EventType.NodeCreated:节点创建<br/>
+EventType.NodeDataChanged:节点数据变更<br/>
+EventType.NodeChildrenChanged:子节点变更<br/>
 EventType.NodeDeleted:节点删除## 
 ## 状态类型
-KeeperState.Disconnected:未连接
-KeeperState.SyncConnected:已连接
-KeeperState.AuthFailed:认证失败
+KeeperState.Disconnected:未连接<br/>
+KeeperState.SyncConnected:已连接<br/>
+KeeperState.AuthFailed:认证失败<br/>
 KeeperState.Expired:会话失效
 ## shell操作watch
-create /watchtest 123 *(创建一个path存储123)*
+create /watchtest 123 *(创建一个path存储123)*<br/>
 get /watchtest watch *(后面跟了一个watch代表设置监听，ls/get/ls2都可以设置watch，此时当节点发生变化，该客户端可收到信息)*
 ## zookeeper JAVA API
 ##### 连接并创建节点
