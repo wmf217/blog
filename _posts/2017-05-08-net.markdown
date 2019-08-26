@@ -1,0 +1,112 @@
+---
+layout:     post
+title:      "网络编程"
+subtitle:   " \"网络编程\""
+date:       2017-05-08 20:44:00
+author:     "wmf"
+header-img: "img/in-post/bigdata.jpg"
+catalog: true
+tags:
+    - java
+---
+## 三要素
+ip: 计算机在网络中的唯一标识，通过ip可以找到通讯所在的机器<br/>
+端口:是一台机器上不同程序的标识(0-1024系统使用或保留端口)<br/>
+传输协议:通信双发都遵守的达成的传输数据的格式
+## 传输协议
+##### UDP协议(用户数据报协议)
+1.将数据封装到数据包中，不需要建立连接
+2.每个数据的大小限制在64k内
+3.不可靠但速度快
+##### TCP协议(传输控制协议)
+1.建立连接，形成传输数据的通道
+2.可以大数据量传输
+3.经过三次握手，可靠，但效率也低
+## 网络模型
+1.应用层(为终端应用程序提供服务，直接面对用户)
+2.表示层(对数据的解释，加密和解密，压缩和解压)
+3.会话层(通过传输层建立数据传输的通路，主要在系统之间发起会话和接受会话请求)
+4.传输层(定义了数据传输的协议和端口，主要对数据进行分段，这一层的数据叫做段)
+5.网络层(主要进行ip地址的封装和解封，这一层的数据叫数据包，这一层的设备是路由器)
+6.数据链路层(主要进行MAC地址的封装和解封，这一层的数据叫帧，这一层的设备是交换机)
+7.物理层(主要定义物理设备的标准，比如网线的接口类型，光线的接口类型，各种传输介质的传输速率，这一层的数据最终编码用0,1标识，通过物理介质传输，这一层数据叫做比特)
+## socket
+socket又称套接字，用于描述ip地址和端口(三要素少一个协议)
+## 基于UDP的socket通信
+##### 客户端
+```java
+// 创建发送端的对象DatagramSocket
+DatagramSocket client = new DatagramSocket();
+// 数据打包
+String msg = "hello";
+InetAddress address = InetAddress.getLocalHost(); // 模拟本地
+DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, address, 12321);
+// 数据发送
+client.send(packet);
+// 资源释放
+client.close();
+```
+##### 服务端
+```java
+// 创建发送端的对象DatagramSocket
+DatagramSocket client = new DatagramSocket();
+// 数据打包
+String msg = "hello";
+InetAddress address = InetAddress.getLocalHost(); // 模拟本地
+DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, address, 12321);
+// 数据发送
+client.send(packet);
+// 资源释放
+client.close();
+```
+先运行服务端再运行客户端，服务端打印
+```
+接受来自192.168.1.101的信息：hello
+```
+**如果先运行客户端，则服务端一直阻塞**
+## 基于TCP的socket通信
+##### 客户端
+```java
+// 创建客户端的socket服务
+// 再socket中指定传输数据的目的地 ip+端口
+Socket socket = new Socket("127.0.0.1", 12321);
+// 通过socket建立的通道输出数据
+// 取得输出流
+OutputStream outputStream = socket.getOutputStream();
+outputStream.write("hello tcp".getBytes());
+// 释放资源
+socket.close();
+```
+##### 服务端
+```java
+// 建立服务端的socket服务，并且监听本地的一个端口
+ServerSocket serverSocket = new ServerSocket(12321);
+// 监听连接, 一个阻塞的方法, 请求过来返回与之对应的socket
+Socket socket = serverSocket.accept();
+// 获取输入流，读取数据
+InputStream inputStream = socket.getInputStream();
+byte[] bytes = new byte[1024];
+int len = inputStream.read(bytes);
+System.out.println(new String(bytes,0,len));
+// 释放资源
+socket.close();
+// serverSocket一般不关闭而是继续accept数据
+```
+## IO通信模型
+##### BIO 阻塞模式
+如上所示，每次serverSocket accept到对象新建一个线程处理socket
+##### NIO 非阻塞模式
+NIO三大核心部分: Channel(通道), Buffer(缓冲区), Selector(选择器)<br>
+Buffer: 容器对象, 包含一些写入和读取的数据，在NIO库中，所有数据都是缓存器处理的<br>
+Channel: 通道不通于流的地方是通道是双向的，Channel不会直接处理字节数据，而是通过Buffer对象处理数据<br>
+Selector: 提供选择已就绪任务的能力，Selector会不断轮询注册在其上的Channel，如果某个Channel出现读写事件，这个Channel就处于就绪状态，会被Selector轮询出来，然后进行后续的IO操作，这样服务端只需要一两个线程就可以进行多客户端通信(通俗讲就是可以避免客户端和服务端一对一，可以实现服务端一对多个客户端)
+## RPC(远程过程调用协议)
+通俗的描述: 客户在不知道调用细节的情况下，调用存在于运程计算机上的某个过程和函数，就像调用本地程序一样
+正是的描述: 一种通过网络从远程计算机上请求服务，而不需要了解底层网络协议的技术
+1.RPC是一种协议，典型的RPC：Dubbo、Thrift、Hetty等，但具体的实现者往往会包含附加的功能，如Dubbo包含了服务管理、访问权限管理等功能
+2.网络协议和IO模型对其透明：调用者不需要关心
+3.信息格式对其透明：也不需要关系
+4.跨语言能力
+###### RPC的实现
+五个部分user,user-sub,RPCruntime,server-sub,server.
+sub: 存根，为了让客户端调用远程程序就好像对用本地程序一样，屏蔽了客户调用远程主机的对象
