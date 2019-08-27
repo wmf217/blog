@@ -171,3 +171,61 @@ FastLeaderElection算法
 1.数据发布与订阅(配置中心)
 2.命名服务(可以用一个path存储一个服务的地址)
 3.分布式锁(临时节点不可重复，创建成功的相当于获取了锁，其它未成功的监听该节点，节点删除后通过创建获得锁)
+## 例子1: 监听配置文件修改
+```java
+import java.util.concurrent.CountDownLatch;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.Watcher.Event.EventType;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
+/**
+ * 分布式配置中心demo
+ * @author
+ *
+ */
+public class Test2 implements Watcher {
+
+    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static ZooKeeper zk = null;
+    private static Stat stat = new Stat();
+
+    public static void main(String[] args) throws Exception {
+        //zookeeper配置数据存放路径
+        String path = "/username";
+        //连接zookeeper并且注册一个默认的监听器
+        zk = new ZooKeeper("129.28.89.201:2181", 5000, //
+                new Test2());
+        //等待zk连接成功的通知
+        connectedSemaphore.await();
+        //获取path目录节点的配置数据，并注册默认的监听器
+        System.out.println("获取配置信息成功，值为：" + new String(zk.getData(path, true, stat)));// true为继续监听该节点
+
+        Thread.sleep(Integer.MAX_VALUE);
+    }
+
+    public void process(WatchedEvent event) {
+        if (KeeperState.SyncConnected == event.getState()) {  //zk连接成功通知事件
+            if (EventType.None == event.getType() && null == event.getPath()) {
+                connectedSemaphore.countDown();
+            } else if (event.getType() == EventType.NodeDataChanged) {  //zk目录节点数据变化通知事件
+                try {
+                    System.out.println("配置已修改，新值为：" + new String(zk.getData(event.getPath(), true, stat)));// true为继续监听该节点
+                } catch (Exception e) {
+                }
+            }
+        }
+    }
+}
+```
+输出
+```
+获取配置信息成功，值为：wmf
+配置已修改，新值为：wmf2
+配置已修改，新值为：wmf3
+```
+这个小程序会一直获取配置信息的变动
+## Zookeeper集群模式安装
+本例搭建的是伪集群模式，即一台机器上启动三个zookeeper实例组成集群，真正的集群模式无非就是实例IP地址不同，搭建方法没有区别
+![](https://blog.csdn.net/java_66666/article/details/81015302)
