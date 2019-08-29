@@ -82,6 +82,7 @@ Znode修改的事务ID,即每次对znode的修改都会更新mzxid
 cd /export/server/zookeeper/bin<br/>
 ./zkCli.sh<br/>
 ls /<br/>
+<font color="red">注意: 服务端zkServer.sh, 客户端zkCli.sh, 因为这点破事你捅咕了一晚上</font>
 ##### 创建节点
 create [-s] [-e] path data acl<br/>
 -s 序列化<br/>
@@ -227,5 +228,50 @@ public class Test2 implements Watcher {
 ```
 这个小程序会一直获取配置信息的变动
 ## Zookeeper集群模式安装
-本例搭建的是伪集群模式，即一台机器上启动三个zookeeper实例组成集群，真正的集群模式无非就是实例IP地址不同，搭建方法没有区别
-![](https://blog.csdn.net/java_66666/article/details/81015302)
+本例搭建的是伪集群模式，即一台机器上启动三个zookeeper实例组成集群，真正的集群模式无非就是实例IP地址不同，搭建方法没有区别 
+
+[https://blog.csdn.net/java_66666/article/details/81015302](https://blog.csdn.net/java_66666/article/details/81015302) 
+在conf目录下创建三个cfg文件，zoo-1.cfg，zoo-2.cfg，zoo-2.cfg
+```
+dataDir=/export/data/zkdata-1 // 数据存放地址
+clientPort=2181 //端口号
+server.1=127.0.0.1:2888:3888 //这里就是集群,一共三台服务器
+server.2=127.0.0.1:2888:3889
+server.3=127.0.0.1:2888:3890
+```
+```
+dataDir=/export/data/zkdata-2 // 数据存放地址
+clientPort=2182 //端口号
+server.1=127.0.0.1:2888:3888 //这里就是集群,一共三台服务器
+server.2=127.0.0.1:2888:3889
+server.3=127.0.0.1:2888:3890
+```
+```
+dataDir=/export/data/zkdata-3 // 数据存放地址
+clientPort=2183 //端口号
+server.1=127.0.0.1:2888:3888 //这里就是集群,一共三台服务器
+server.2=127.0.0.1:2888:3889
+server.3=127.0.0.1:2888:3890
+```
+然后在三个dataDir分别创建三个myid文件，存放1,2,3
+```
+echo 1 > myid
+echo 2 > myid
+echo 3 > myid
+```
+这三个文件夹就是存放数据的地址(zookeeper是一个数据库) 
+三个myid就是存放主键的文件 
+分别启动三个zookeeper服务(启动zookeeper可以选择配置文件)
+```
+bin/zkServer.sh start  conf/zoo-1.cfg
+bin/zkServer.sh start  conf/zoo-2.cfg
+bin/zkServer.sh start  conf/zoo-3.cfg
+```
+连接指定端口的zookeeper服务
+```
+bin/zkCli.sh -server localhost:2181
+bin/zkCli.sh -server localhost:2182
+bin/zkCli.sh -server localhost:2183
+```
+
+
