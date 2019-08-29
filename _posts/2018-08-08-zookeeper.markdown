@@ -230,7 +230,7 @@ public class Test2 implements Watcher {
 ## Zookeeper集群模式安装
 本例搭建的是伪集群模式，即一台机器上启动三个zookeeper实例组成集群，真正的集群模式无非就是实例IP地址不同，搭建方法没有区别 
 
-[https://blog.csdn.net/java_66666/article/details/81015302](https://blog.csdn.net/java_66666/article/details/81015302) 
+[https://blog.csdn.net/java_66666/article/details/81015302](https://blog.csdn.net/java_66666/article/details/81015302) <br/>
 在conf目录下创建三个cfg文件，zoo-1.cfg，zoo-2.cfg，zoo-2.cfg
 ```
 dataDir=/export/data/zkdata-1 // 数据存放地址
@@ -259,8 +259,8 @@ echo 1 > myid
 echo 2 > myid
 echo 3 > myid
 ```
-这三个文件夹就是存放数据的地址(zookeeper是一个数据库) 
-三个myid就是存放主键的文件 
+这三个文件夹就是存放数据的地址(zookeeper是一个数据库) <br/>
+三个myid就是存放主键的文件 <br/>
 分别启动三个zookeeper服务(启动zookeeper可以选择配置文件)
 ```
 bin/zkServer.sh start  conf/zoo-1.cfg
