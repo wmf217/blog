@@ -9,6 +9,11 @@ catalog: true
 tags:
     - java
 ---
+## zk是什么
+zookeeper是一个数据库<br/>
+zookeeper是一个文件系统特点的数据库<br/>
+zookeeper解决了数据一致性问题的分布式数据库<br/>
+zookeeper是一个具有发布和订阅功能的分布式数据库<br/>
 ## build
 su - *更换root账号*<br/>
 service iptables stop *关闭防火墙*<br/>
