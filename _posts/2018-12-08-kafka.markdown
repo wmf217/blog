@@ -34,8 +34,8 @@ Consumer以Consumer group方式来工作，一个group共同消费一个topic<br
 Consumer group保证topic内的一个partition只会被group中的一个Consumer消费，所以partition一定会被有序消费<br>
 group中的consumer出现故障，消费组内的其他消费者会接管它的分区
 ## kafka的整体架构
-![](/img/in-post/kafka1.png)
-![](/img/in-post/kafka2.png)
+![](/img/in-post/kafka1.jpg)
+![](/img/in-post/kafka2.jpg)
 
 
 
