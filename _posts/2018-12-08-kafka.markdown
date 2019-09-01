@@ -22,5 +22,20 @@ tags:
 kafka支持位移，也就是offset，消费者可以去指定offset下读取数据
 ![](/img/in-post/offset.png)
 ## payload
-kafka发送消息的内部单元叫payload，以topic来分类，它是一个字节数组，不关心数据的具体格式
+kafka发送消息的内部单元叫payload，以topic来分类，它是一个字节数组，不关心数据的具体格式<br>
+每个payload都有一个可选的metadata，被称作key，key同样是一个字节数组<br>
+payload被写入partition的是否，key控制分派过程，默认使用hash取模，如果不存在key，使用轮询partition的方式<br>
+为了更加高效，payload以批量提交的方式写入kafka，这些payload有相同的topic和partition，它是吞吐和延迟的权衡<br>
+*批量提交的触发，一个是达到了预先设置的数据量，一个是达到了预先设置的超时时间*
+## Producer&Consumer
+Producer生产payload，Consumer订阅一个或多个topic<br>
+Consumer自己维护payload的offset<br>
+Consumer以Consumer group方式来工作，一个group共同消费一个topic<br>
+Consumer group保证topic内的一个partition只会被group中的一个Consumer消费，所以partition一定会被有序消费<br>
+group中的consumer出现故障，消费组内的其他消费者会接管它的分区
+## kafka的整体架构
+![](/img/in-post/kafka1.png)
+![](/img/in-post/kafka2.png)
+
+
 
