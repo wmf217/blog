@@ -278,5 +278,24 @@ bin/zkCli.sh -server localhost:2181
 bin/zkCli.sh -server localhost:2182
 bin/zkCli.sh -server localhost:2183
 ```
-
+## ZAB协议
+zookeeper使用了ZAB协议，主要有三点
++ 领导者选举
++ 数据同步(恢复阶段)
++ 接受请求(二阶段提交)
+##### 领导者选举
+半数以上机制，当投票达到半数以上成为领导者，影响投票的因素为zxid(事务ID，代表了数据的新旧)，myid(主键的大小为次要因素)
+*当已经通过过半机制选出Leader，后启动/后加入的直接成为Follower*
+##### 事务性请求
+也就是增，删，改请求，如果收到这种请求的是leader则会执行二阶段提交，如果是follower则会转交给leader处理
+##### 二阶段提交
+Leader首先发送事务日志给Follower，Follower返回ack，当Leader接受到半数以上的ack是，发送执行指令给所有Follower，Follower接收到指令执行事务
+##### 事务日志
+zookeeper是一个数据库，它的树形结构节点数据存储在内存中，而真正持久化的实现是依靠事务日志，当重启服务时，依靠持久化的日志来恢复内存中的数据(二阶段提交第一阶段发送的是事务日志，第二节点只是发送执行指令，当有个事务日志，Follower就已经知道要执行什么操作)
+##### Observer
+当需要提高读性能时，可能会通过增加follower来提高，但是follower一旦多了就会影响写的性能(需要半数以上的节点返回ack，*二阶段请求ack最耗时*)，因此为了提高读性能同时不影响写性能，出现了Observer节点(处理写请求时不需要接受Observer的ack，它也不参加领导选举)
+##### 脑裂
+集群中出现了多个leader(比如有5个节点，2个在A机房，3个在B机房，AB机房的网线突然断了，A机房重新选出一个leader，B机房也选出一个leader，这就是脑裂)<br>
+zookeeper可以避免脑裂现象因为*过半机制*<br>
+所以过半机制一定是>而不是>=
 
