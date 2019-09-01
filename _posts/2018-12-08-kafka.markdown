@@ -1,0 +1,24 @@
+---
+layout:     post
+title:      "kafka"
+subtitle:   " \"kafka理论和实践\""
+date:       2018-12-08 20:44:00
+author:     "wmf"
+header-img: "img/in-post/bigdata.jpg"
+catalog: true
+tags:
+    - java
+---
+## 消息系统
++ 点对点模式
++ 发布订阅模式
+## topic&partition
+![](/img/in-post/topic.png)
+##### topic
+每个发送到kafka的消息都有一个类别，这个类别就是topic(主题)
+##### partition
+一个topic是由多个partition(分区)组成，一个partition的消息是有序的，但是多个partition之间是不保证有序的
+##### offset
+kafka支持位移，也就是offset，消费者可以去指定offset下读取数据
+
+
