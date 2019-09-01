@@ -10,8 +10,8 @@ tags:
     - java
 ---
 ## 消息系统
-+ 点对点模式
-+ 发布订阅模式<br>
+1.点对点模式
+2.发布订阅模式
 ## topic&partition
 ![](/img/in-post/topic.png)
 ##### topic
@@ -21,6 +21,6 @@ tags:
 ##### offset
 kafka支持位移，也就是offset，消费者可以去指定offset下读取数据
 ![](/img/in-post/offset.png)
-##### payload
-kafka发送消息的内部单元叫payload，以topic来分类
+## payload
+kafka发送消息的内部单元叫payload，以topic来分类，它是一个字节数组，不关心数据的具体格式
 
