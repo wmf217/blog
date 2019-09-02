@@ -36,6 +36,23 @@ group中的consumer出现故障，消费组内的其他消费者会接管它的�
 ## kafka的整体架构
 ![](/img/in-post/kafka1.jpg)
 ![](/img/in-post/kafka2.jpg)
-
+## kafka的配置
+##### broker
+broker.id: kafka broker的标识信息<br>
+port: 监听端口<br>
+zookeeper.connect: zookeeper的连接地址<br>
+log.dirs: kafka将消息持久化到磁盘，存在这个目录下<br>
+num.recovery.threads.per.data.dir: 数据所对应的目录的线程数(只在启动，恢复数据，关闭时使用，所以可以尽量设大点)<br>
+auto.create.topics.enable: 指定的场景下自动创建topic(一般手动设为false，以及时发现没有topic的错误)
+###### topic
+number.partitions: topic创建时partition个数，默认是1(分区机制可以使得topic可以均衡分布在kafka集群里，很多都把分区数设置成broker的数量，或者是broker数量的整数倍)<br>
+**设置分区数的考虑因素？首先是你希望的topic吞吐量是多少，单个分区的吞吐量是多少，比如Consumer从partition中读取数据并处理存入数据库的时间是50mb/s，预期的topic吞吐量是1000mb/s，那至少需要20个分区**<br>
+log.segment.bytes: 每个segment的最大数据容量，默认1G(Producer在写入消息时，数据存储在日志段的segment文件中，当segment写满了，就会新建一个segment，旧的segment关闭以后过一段时间就会自动删除)<br>
+**如果Producer写入速度很慢，这个参数可以适当的做调整，加入一个topic一天只有100mb数据写入，该参数使用默认值1G，需要10天一个segment才会被写满，如果过期时间为7天，那么此时需要17天才可以删除一个segment**<br>
+log.segment.ms: segment强制关闭的时间，没有默认值(一旦设置，到了这个时间segment强制关闭，没有默认值，所以默认使用上面的参数用文件的大小来关闭)<br>
+**一个需要注意的点-如果有大量的partition，而这些partition的segment都没有达到文件大小上限，那么当达到log.segment.ms的时间时，这些segement会同时被关闭，大量的IO操作会影响IO性能**<br>
+message.max.bytes: payload的最大数据量限制，默认是1mb(当Producer发送的数据超过这个值会发送失败)
+## kafka发送消息的基本流程
+![](/img/in-post/kafka3.jpg)
 
 
