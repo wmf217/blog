@@ -76,3 +76,42 @@ bin/zkServer.sh start conf/zoo-3.cfg
 ```
 bin/kafka-server-start.sh config/server.properties
 ```
+## shell操作kafka
+创建一个topic
+```
+kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 1 --replication-factor 1 --topic wmf
+```
+解释<br>
+--partitions 1   #创建1个分区(当前没有通过集群搭建，所以只能创建一个分区)<br>
+--replication-factor 1     #复制1份<br>
+--topic     #主题为wmf<br>
+查看topic信息
+```
+bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic wmf
+```
+显示信息
+```
+Topic:wmf       PartitionCount:1        ReplicationFactor:1     Configs:
+Topic: wmf      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+```
+删除topic
+```
+bin/kafka-topics.sh --delete --zookeeper localhost:2181 --topic wmf
+```
+##### producer发送信息
+```
+bin/kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic wmf
+```
+输入信息
+```
+this is a message from wmf
+```
+#### consumer接受信息
+```
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic wmf --from-beginning
+```
+获得信息
+```
+this is a message from wmf
+```
+即接受到了信息
