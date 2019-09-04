@@ -54,5 +54,25 @@ log.segment.ms: segment强制关闭的时间，没有默认值(一旦设置，�
 message.max.bytes: payload的最大数据量限制，默认是1mb(当Producer发送的数据超过这个值会发送失败)
 ## kafka发送消息的基本流程
 ![](/img/in-post/kafka3.jpg)
-
-
+## kafka的安装启动
+```
+tar -zxvf kafka2.3.0.tgz
+```
+kafka的默认启动需要1G内存，如果计算机内存太小，可以调整
+```
+free -h // 查看内存剩余
+find . -iname '*server-start.sh'
+vi /export/server/kafka/bin/zookeeper-server-start.sh
+vi /export/server/kafka/bin/kafka-server-start.sh
+```
+将```-Xms1G -Xms1G```修改为```-Xmx400M -Xms400M```(根据需要，试过了128m跑不起来内存溢出)
+启动zookeeper集群
+```
+bin/zkServer.sh start conf/zoo-1.cfg
+bin/zkServer.sh start conf/zoo-2.cfg
+bin/zkServer.sh start conf/zoo-3.cfg
+```
+启动kafka
+```
+bin/kafka-server-start.sh config/server.properties
+```
