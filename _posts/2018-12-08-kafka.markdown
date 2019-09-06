@@ -74,7 +74,12 @@ bin/zkServer.sh start conf/zoo-3.cfg
 ```
 启动kafka
 ```
-bin/kafka-server-start.sh config/server.properties
+bin/kafka-server-start.sh -daemon config/server.properties
+```
+在命令后添加-daemon参数，可以使kafka以守护进程方式启动，即不占用窗口<br>
+关闭kafka
+```
+bin/kafka-server-stop.sh config/server.properties
 ```
 ## shell操作kafka
 创建一个topic
@@ -115,3 +120,30 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic wmf --fr
 this is a message from wmf
 ```
 即接受到了信息
+## 伪集群启动kafka
+创建3个配置文件
+```
+cp server.properties server_1.properties
+cp server.properties server_2.properties
+cp server.properties server_3.properties
+```
+修改三个配置文件，这里修改三个参数
+```
+broker.id=1
+listeners=PLAINTEXT://:9092
+log.dirs=/export/data/kafka-1
+
+broker.id=2
+listeners=PLAINTEXT://:9093
+log.dirs=/export/data/kafka-2
+
+broker.id=3
+listeners=PLAINTEXT://:9094
+log.dirs=/export/data/kafka-3
+```
+启动三个kafka
+```
+bin/kafka-server-start.sh config/server_1.properties
+bin/kafka-server-start.sh config/server_2.properties
+bin/kafka-server-start.sh config/server_3.properties
+```
