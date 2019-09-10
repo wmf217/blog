@@ -84,10 +84,10 @@ bin/kafka-server-stop.sh config/server.properties
 ## shell操作kafka
 创建一个topic
 ```
-kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 1 --replication-factor 1 --topic wmf
+kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 2 --replication-factor 1 --topic wmf
 ```
 解释<br>
---partitions 1   #创建1个分区(当前没有通过集群搭建，所以只能创建一个分区)<br>
+--partitions 2   #创建2个分区(当前没有通过集群搭建，所以只能创建一个分区)<br>
 --replication-factor 1     #复制1份<br>
 --topic     #主题为wmf<br>
 查看topic信息
@@ -96,7 +96,7 @@ bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic wmf
 ```
 显示信息
 ```
-Topic:wmf       PartitionCount:1        ReplicationFactor:1     Configs:
+Topic:wmf       PartitionCount:2        ReplicationFactor:1     Configs:
 Topic: wmf      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
 ```
 删除topic
@@ -130,15 +130,15 @@ cp server.properties server_3.properties
 修改三个配置文件，这里修改三个参数
 ```
 broker.id=1
-listeners=PLAINTEXT://:9092
+listeners=PLAINTEXT://ip:9092
 log.dirs=/export/data/kafka-1
 
 broker.id=2
-listeners=PLAINTEXT://:9093
+listeners=PLAINTEXT://ip:9093
 log.dirs=/export/data/kafka-2
 
 broker.id=3
-listeners=PLAINTEXT://:9094
+listeners=PLAINTEXT://ip:9094
 log.dirs=/export/data/kafka-3
 ```
 启动三个kafka
@@ -146,4 +146,84 @@ log.dirs=/export/data/kafka-3
 bin/kafka-server-start.sh config/server_1.properties
 bin/kafka-server-start.sh config/server_2.properties
 bin/kafka-server-start.sh config/server_3.properties
+```
+## 小记录
+这里首先记录一下一个困扰两小时的问题，就是pom.xml中的依赖并没有在external libraries中，报错fail to read descriptor for xxx<br>
+解决办法：把本地仓库清空重新reimport<br>
+配置server.properties时listener的ip配上了确报错
+```
+kafka.common.KafkaException: Socket server failed to bind to xx:9092: Cannot assign requested address
+```
+产生原因：虚拟机对外ip[暴露的ip]和真实ip[ifconfig显示的ip]可能只是映射关系<br>
+解决办法：查询真实ip```ifconfig -a```, 配置为真实ip
+## java
+```java
+package com.wmf.kfk.Producer;
+
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+/**
+ *<h1>kafka producer<h1/>
+ * 启动zookeeper
+ * 启动kafka
+ * 创建topic: kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --partitions 1 --replication-factor 1 --topic wmf
+ * kafka producer: kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic wmf
+ * kafka consumer: kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic wmf --from-beginning
+ * **/
+public class Producer {
+    // String, String分别是key和value的类型
+    private static KafkaProducer<String, String> producer;
+    static {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "129.28.89.201:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        producer = new KafkaProducer<String, String>(props);
+    }
+
+    private static void sendMessageForgetResult() {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>("wmf", "name", "go forget result");
+        producer.send(record);
+        producer.close(); //kafka是批量提交，为了保证kafka能收到消息。所以执行关闭
+    }
+
+    private static void sendMessageSync() throws ExecutionException, InterruptedException {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>("wmf", "name", "go sync");
+        RecordMetadata result = producer.send(record).get();
+        System.out.println(result.topic());
+        System.out.println(result.partition());
+        System.out.println(result.offset());
+        producer.close(); //kafka是批量提交，为了保证kafka能收到消息。所以执行关闭
+    }
+
+    private static void sendMessageAsync() {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>("wmf", "name", "go async");
+        producer.send(record, new Callback() {
+            public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+                if (e!=null) {
+                    e.printStackTrace();
+                    return;
+                }
+                System.out.println(recordMetadata.topic());
+                System.out.println(recordMetadata.partition());
+                System.out.println(recordMetadata.offset());;
+            }
+        });
+        producer.close();
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+//        sendMessageForgetResult();
+        sendMessageSync();
+//        sendMessageAsync();
+    }
+}
+
 ```
