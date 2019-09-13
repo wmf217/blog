@@ -147,6 +147,15 @@ bin/kafka-server-start.sh config/server_1.properties
 bin/kafka-server-start.sh config/server_2.properties
 bin/kafka-server-start.sh config/server_3.properties
 ```
+## kafka如何形成集群
+由上面的集群搭建可以看出，kafka的配置文件并没有像zookeeper一样在每个配置文件中配置各节点的地址(```server.1=xxx:2181,server.2=xxx:2182,....```)，那么kafka这个集群是怎么形成的，换句话说broker之间如何互相找到彼此(困扰了好久，网上每一个人解释，真是醉了)，实际上这些kafka之所以形成集群是因为他们连接了同一个zookeeper集群，也就是在zookeeper.connect中配置的地址，所有的broker信息都会存储在zookeeper中的/brokers/ids节点中，存储的每一个id的信息大概如下
+```
+{"listener_security_protocol_map":{"PLAINTEXT":"PLAINTEXT"},"endpoints":["PLAINTEXT://172.27.16.2:9092"],"jmx_port":-1,"host":"172.27.16.2","timestamp":"1568370951506","port":9092,"version":4}
+```
+可以看到每个ids中存储了每一个brokers的地址，那么一个brokers可以通过读取或监听这个节点来知道所有的brokers地址，那么这个集群就形成了，原理图如下
+![](/img/in-post/kafka5.png)
+## 查看kafka的版本号
+kafka没有提供相关命令只能：```cd/libs``` 目录下有一个像kafka_2.12-2.3.0.jar的文件，其中2.3.0就是版本号
 ## kafka 关于分区的简单理解
 ![](/img/in-post/kafka4.png)
 以上图中所示：创建了一个topic 1的topic，该topic有2个分区1个备份，集群中有三个broker```(kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 2 --replication-factor 1 --topic topic1)```，为了负载均衡，kafka会尽可能的把每个分区的leader布置在不同的broker上(copy只是一个备份，发布和读取消息时都不会去copy里面读写)，当producer发布消息时，kafka会根据key的hash值或producer自定义的分区规则将消息发往不同的分区。<br>
