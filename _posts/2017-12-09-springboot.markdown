@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      "springboot 学习笔记"
-subtitle:   " \"springboot 学习笔记\""
+title:      "springboot 基础"
+subtitle:   " \"springboot 基础\""
 date:       2017-12-09 19:25:00
 author:     "wmf"
 header-img: "img/java.jpg"
@@ -10,7 +10,7 @@ tags:
     - java
     - spring
 ---
-### springboot 学习笔记
+### springboot 基础
 ##### 微服务
 一个项目 可以由多个 小型服务构成
 

@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      "maven 学习笔记"
-subtitle:   " \"maven 学习笔记\""
+title:      "maven 基础"
+subtitle:   " \"maven 基础\""
 date:       2018-01-01 19:25:00
 author:     "wmf"
 header-img: "img/java.jpg"
@@ -10,7 +10,7 @@ tags:
     - java
     - spring
 ---
-### maven 学习笔记
+### maven 基础
 ##### maven指令
 1. mvn compile:
 This will run Maven, telling it to execute the compile goal. When it’s finished, you should find the compiled .class files in the target/classes directory.
