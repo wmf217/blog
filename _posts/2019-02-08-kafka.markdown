@@ -2,7 +2,7 @@
 layout:     post
 title:      "kafka"
 subtitle:   " \"kafka理论和实践\""
-date:       2018-12-08 20:44:00
+date:       2019-02-08 20:44:00
 author:     "wmf"
 header-img: "img/in-post/bigdata.jpg"
 catalog: true
@@ -15,9 +15,9 @@ tags:
 ## topic&partition
 ![](/img/in-post/topic.png)
 ##### topic
-每个发送到kafka的消息都有一个类别，这个类别就是topic(主题)
+每个发送到kafka的消息都有一个类别，这个类别就是topic(主题)，它是一个抽象概念
 ##### partition
-一个topic是由多个partition(分区)组成，一个partition的消息是有序的，但是多个partition之间是不保证有序的
+一个topic是由多个partition(分区)组成，一个partition的消息是有序的，但是多个partition之间是不保证有序的，它是一个物理概念，客户端发布和订阅topic时不需要关心具体从哪个分区读取的数据，当然发布消息时是可以指定分区的
 ##### offset
 kafka支持位移，也就是offset，消费者可以去指定offset下读取数据
 ![](/img/in-post/offset.png)
@@ -101,12 +101,16 @@ bin/kafka-topics.sh --create --bootstrap-server 127.0.0.1:9092 --replication-fac
 --topic     #主题为wmf<br>
 查看topic信息
 ```
-bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic wmf
+bin/kafka-topics.sh --describe --bootstrap-server 172.17.201.39:9092 --topic 915-1
 ```
 显示信息
 ```
 Topic:wmf       PartitionCount:2        ReplicationFactor:1     Configs:
 Topic: wmf      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+```
+查看topic列表
+```
+bin/kafka-topics.sh --list --bootstrap-server 172.17.201.39:9092
 ```
 删除topic
 ```
@@ -201,6 +205,22 @@ consumer group是一个consumer组，*一个组的成员共同消费一个topic*
 [https://blog.csdn.net/u013256816/article/details/80865540](https://blog.csdn.net/u013256816/article/details/80865540)<br>
 上面有一个老的命令行```--zookeeper```可以简单理解controller的一个小作用如下图
 ![](/img/in-post/kafka6.png)
+## bootstrap-server
+比如现在我有三个broker，创建一个分区为2的topic 915-1，现在查看topic的状态，显示如下
+```
+Topic:915-1     PartitionCount:2        ReplicationFactor:2     Configs:segment.bytes=1073741824
+        Topic: 915-1    Partition: 0    Leader: 2       Replicas: 2,1   Isr: 2,1
+        Topic: 915-1    Partition: 1    Leader: 3       Replicas: 3,2   Isr: 3,2
+```
+可以看到topic有两个分区，分区的leader分别是2和3
+那么此时创建producer和consumer
+```
+bin/kafka-console-producer.sh --broker-list 172.17.201.39:9092 --topic 915-1
+...
+bin/kafka-console-consumer.sh --bootstrap-server 172.17.201.39:9092 --topic 915-1 --from-beginning
+```
+这是无论是producer的broker-list，还是consumer的bootstrap-server都连接的是9092也就是id==1(分别是1:9092,2:9093,3:9094)的broker，也就是这个broker上并没有915-1的消息或者只是副本，但是却正常实现了发布和订阅消息<br>
+**所以这个broker-list/bootstrap-server或之前的zookeeper都只是集群中的一个随便的节点，无论连接到哪个节点都是相当于连接整个集群，消息交由controller处理和分配，也就是上面的设为9093,9094都一样的效果，但可以设置多个以免某个宕机**
 ## 小记录
 这里首先记录一下一个困扰两小时的问题，就是pom.xml中的依赖并没有在external libraries中，报错fail to read descriptor for xxx<br>
 解决办法：把本地仓库清空重新reimport<br>
@@ -208,8 +228,8 @@ consumer group是一个consumer组，*一个组的成员共同消费一个topic*
 ```
 kafka.common.KafkaException: Socket server failed to bind to xx:9092: Cannot assign requested address
 ```
-产生原因：虚拟机对外ip[暴露的ip]和真实ip[ifconfig显示的ip]可能只是映射关系<br>
-解决办法：查询真实ip```ifconfig -a```, 配置为真实ip
+产生原因：虚拟机对外ip(公网ip)[暴露的ip]和真实ip(内网ip)[ifconfig显示的ip]可能只是映射关系<br>
+解决办法：查询内网ip```ifconfig -a```, 配置为内网ip
 ## java
 ```java
 package com.wmf.kfk.Producer;
