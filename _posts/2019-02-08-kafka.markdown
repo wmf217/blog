@@ -209,6 +209,7 @@ bin/kafka-console-consumer.sh --bootstrap-server 172.17.201.39:9093 --topic 915-
 上面的group1就是组名。打开两个客户端分别执行如上代码<br>
 生产者依次发布两条消息915-1和915-2，效果如下图
 ![](/img/in-post/kafka7.png)
+一个接受到分区0的915-1，一个接受到分区1的915-2，两个加在一起就是所有的message
 ## Controller
 上文提到了controller_epoch代表来了controller的纪元，那么什么是controller<br>
 [https://blog.csdn.net/u013256816/article/details/80865540](https://blog.csdn.net/u013256816/article/details/80865540)<br>
