@@ -200,6 +200,15 @@ consumer group是一个consumer组，*一个组的成员共同消费一个topic*
 
 比如如上的例子，topic1有两个分区，那么客户端我们可以用两个线程建立两个consumer(同一组)，分别去消费两个分区，加快了消费的速度<br>
 这里消费这个词很有意思，为什么可以两个线程同时消费，因为这个消费的概念就是无论多少个消费者来处理，<font color="red">消费的逻辑一定是一样的(比如都是读取日志信息存入日志表)，而且不能考虑先后顺序(kafka只能保证同一个分区的消息是有序的，分区之间的消息不保证有序))</font>
+## 分区测试
+现在创建一个topic 915-1，有两个分区，启动一个producer，
+启动两个consumer且在同一分组
+```
+bin/kafka-console-consumer.sh --bootstrap-server 172.17.201.39:9093 --topic 915-1 --consumer-property group.id=group1
+```
+上面的group1就是组名。打开两个客户端分别执行如上代码<br>
+生产者依次发布两条消息915-1和915-2，效果如下图
+![](/img/in-post/kafka7.png)
 ## Controller
 上文提到了controller_epoch代表来了controller的纪元，那么什么是controller<br>
 [https://blog.csdn.net/u013256816/article/details/80865540](https://blog.csdn.net/u013256816/article/details/80865540)<br>
