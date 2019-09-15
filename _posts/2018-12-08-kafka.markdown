@@ -81,11 +81,20 @@ bin/kafka-server-start.sh -daemon config/server.properties
 ```
 bin/kafka-server-stop.sh config/server.properties
 ```
+关闭后过一会jps可以看到kafka服务已经没有了
 ## shell操作kafka
 创建一个topic
 ```
 kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 2 --replication-factor 1 --topic wmf
 ```
+或者
+```
+bin/kafka-topics.sh --create --bootstrap-server 127.0.0.1:9092 --replication-factor 1 --partitions 2 --topic wmf
+```
+这两种写法的效果是一样的，只不过第二种直接连接kafka的是新的写法，所以尽量使用```--bootstrap-server```，但老的命令行```--zookeeper```也是支持的，也可以从老的命令行知道topic是在zookeeper中创立的，而kafka对这种topic的创立或者变更一定是做了监听<br>
+>The bin/kafka-topics.sh command line tool is now able to connect directly to brokers with --bootstrap-server instead of zookeeper. The old --zookeeper option is still available for now
+
+<font color="red">注意：如果在server.prototypes中listener设置了真实的ip，那么这里使用的就要是真实的ip，而localhost会提示连接不上的错误</font><br>
 解释<br>
 --partitions 2   #创建2个分区(当前没有通过集群搭建，所以只能创建一个分区)<br>
 --replication-factor 1     #复制1份<br>
@@ -159,12 +168,39 @@ kafka没有提供相关命令只能：```cd/libs``` 目录下有一个像kafka_2
 ## kafka 关于分区的简单理解
 ![](/img/in-post/kafka4.png)
 以上图中所示：创建了一个topic 1的topic，该topic有2个分区1个备份，集群中有三个broker```(kafka-topics.sh --create --zookeeper 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183 --partitions 2 --replication-factor 1 --topic topic1)```，为了负载均衡，kafka会尽可能的把每个分区的leader布置在不同的broker上(copy只是一个备份，发布和读取消息时都不会去copy里面读写)，当producer发布消息时，kafka会根据key的hash值或producer自定义的分区规则将消息发往不同的分区。<br>
+验证一下，搭建一个三个broker的kafka集群，创建一个topic，两个副本，两个分区
+```
+bin/kafka-topics.sh --create --zookeeper 129.28.89.201:2181 --partitions 2 --replication-factor 2 --topic wmf-p2-r2
+```
+此时打卡zookeeper客户端查看信息，首先查看topic:wmf-p2-r2的第一个分区
+```
+get /brokers/topics/wmf-p2-r2/partitions/0/state
+```
+出现如下信息
+```
+{"controller_epoch":44,"leader":0,"version":1,"leader_epoch":0,"isr":[0,1]}
+```
+可以看到这个分区的leader是0，isr(In-Sync Replicas) list为[0,1]，也就是在1中有一个备份，接着查看第二个分区
+```
+get /brokers/topics/wmf-p2-r2/partitions/1/state
+```
+出现如下信息
+```
+{"controller_epoch":44,"leader":1,"version":1,"leader_epoch":0,"isr":[1,2]}
+```
+可以看到这个分区的leader是1，isr(In-Sync Replicas) list为[1,2]，也就是在1中有一个备份<br>
+一些其它的信息controller_epoch，epoch有纪元、时代的意思，这个数相当于kafka集群controller的版本号，标识当前controller是第几代controller，同样leader_epoch就不难理解了<br>
 consumer group是一个consumer组，*一个组的成员共同消费一个topic*，在group1中只有一个消费者，那么它会同时读取两个分区的数据进行消费，而group2中有三个消费者，但<font color="red">一个分区的数据只能被某一个组中一个成员消费</font>，所以只有两个消费者分别实际消费了两个分区的数据，另一个消费者则闲置
 ## 为什么这么设计
 >若没有分区，一个topic对应的消息集在分布式集群服务组中，就会分布不均匀，即可能导致某台服务器A记录当前topic的消息集很多，若此topic的消息压力很大的情况下，服务器A就可能导致压力很大，吞吐也容易导致瓶颈<br>
 
 比如如上的例子，topic1有两个分区，那么客户端我们可以用两个线程建立两个consumer(同一组)，分别去消费两个分区，加快了消费的速度<br>
 这里消费这个词很有意思，为什么可以两个线程同时消费，因为这个消费的概念就是无论多少个消费者来处理，<font color="red">消费的逻辑一定是一样的(比如都是读取日志信息存入日志表)，而且不能考虑先后顺序(kafka只能保证同一个分区的消息是有序的，分区之间的消息不保证有序))</font>
+## Controller
+上文提到了controller_epoch代表来了controller的纪元，那么什么是controller<br>
+[https://blog.csdn.net/u013256816/article/details/80865540](https://blog.csdn.net/u013256816/article/details/80865540)<br>
+上面有一个老的命令行```--zookeeper```可以简单理解controller的一个小作用如下图
+![](/img/in-post/kafka6.png)
 ## 小记录
 这里首先记录一下一个困扰两小时的问题，就是pom.xml中的依赖并没有在external libraries中，报错fail to read descriptor for xxx<br>
 解决办法：把本地仓库清空重新reimport<br>
