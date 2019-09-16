@@ -231,6 +231,57 @@ bin/kafka-console-consumer.sh --bootstrap-server 172.17.201.39:9092 --topic 915-
 ```
 这是无论是producer的broker-list，还是consumer的bootstrap-server都连接的是9092也就是id==1(分别是1:9092,2:9093,3:9094)的broker，也就是这个broker上并没有915-1的消息或者只是副本，但是却正常实现了发布和订阅消息<br>
 **所以这个broker-list/bootstrap-server或之前的zookeeper都只是集群中的一个随便的节点，无论连接到哪个节点都是相当于连接整个集群，消息交由controller处理和分配，也就是上面的设为9093,9094都一样的效果，但可以设置多个以免某个宕机**
+## 外网连接kafka
+为了这个破玩意费了好久的力气，特此记录<br>
+首先是配置文件
+```properties
+# 这里配置内网ip
+listeners=PLAINTEXT://172.27.16.2:9092
+# 这里配置外网ip
+advertised.listeners=PLAINTEXT://129.28.89.201:9092
+```
+之后一定要开启9092端口<br>
+首先是启动防火墙
+```
+查看防火墙状态
+systemctl status firewalld
+开启防火墙
+systemctl start firewalld
+关闭防火墙 
+systemctl stop firewalld
+```
+[https://blog.csdn.net/realjh/article/details/82048492](https://blog.csdn.net/realjh/article/details/82048492)<br>
+然后添加端口9092
+```
+添加指定需要开放的端口：
+firewall-cmd --add-port=9092/tcp --permanent
+查询指定端口是否开启成功：
+firewall-cmd --query-port=9092/tcp
+```
+查看指令运行后显示yes代表端口已开放
+```
+查看端口状态
+netstat -anp
+查看某个端口状态
+netstat -nalp|grep 9092
+```
+然后再远程测试端口是否可访问
+```
+telnet 129.28.89.201 9092
+```
+显示信息
+```
+Trying 129.28.89.201...
+Connected to 129.28.89.201.
+Escape character is '^]'.
+```
+代表已经可以接通<br>
+远程服务器开启客户端(阿里云服务器)连接外网的kafka(腾讯云服务器)
+```
+bin/kafka-console-consumer.sh --bootstrap-server 129.28.89.201:9092 --topic wmf --from-beginning
+```
+以上的129.28.89.201就是腾讯云的外网ip<br>
+**结果可以正常接收信息，so good!!!，这时用本地java api连接远程服务器的kafka就没啥问题了哈哈哈**
 ## 小记录
 这里首先记录一下一个困扰两小时的问题，就是pom.xml中的依赖并没有在external libraries中，报错fail to read descriptor for xxx<br>
 解决办法：把本地仓库清空重新reimport<br>
