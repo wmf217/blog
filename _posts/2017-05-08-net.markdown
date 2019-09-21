@@ -48,16 +48,19 @@ client.close();
 ```
 ##### 服务端
 ```java
-// 创建发送端的对象DatagramSocket
-DatagramSocket client = new DatagramSocket();
-// 数据打包
-String msg = "hello";
-InetAddress address = InetAddress.getLocalHost(); // 模拟本地
-DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, address, 12321);
-// 数据发送
-client.send(packet);
-// 资源释放
-client.close();
+ // 创建服务端的socket对象 DatagramSocket
+DatagramSocket sever = new DatagramSocket(12321);
+// 创建接受数据的数据包(接受数据的容器)
+byte[] bytes = new byte[1024];
+DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+// 接受数据
+sever.receive(packet);
+// 针对数据包进行解析
+String hostAddress = packet.getAddress().getHostAddress();
+byte[] data = packet.getData();
+System.out.println("接受来自"+hostAddress+"的信息："+new String(data));
+// 释放资源
+sever.close();
 ```
 先运行服务端再运行客户端，服务端打印
 ```
