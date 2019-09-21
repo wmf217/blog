@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      "Hibernate 学习简记"
-subtitle:   " \"Hibernate 学习简记\""
+title:      "Hibernate 基础知识"
+subtitle:   " \"Hibernate 基础知识\""
 date:       2018-02-15 19:25:00
 author:     "wmf"
 header-img: "img/java.jpg"
@@ -10,7 +10,7 @@ tags:
     - java
     - javaee
 ---
-### Hibernate 学习简记
+### Hibernate 基础知识
 ***
 #### Hibernate简介
 开源持久层对象关系映射框架(Dao)

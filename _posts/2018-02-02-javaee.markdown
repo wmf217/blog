@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      "javaee 学习简记"
-subtitle:   " \"javaee 学习简记\""
+title:      "javaee 基础知识"
+subtitle:   " \"javaee 基础知识\""
 date:       2018-02-02 19:25:00
 author:     "wmf"
 header-img: "img/java.jpg"
@@ -11,7 +11,7 @@ tags:
     - javaee
     - 面向对象
 ---
-### javaee 学习简记
+### javaee 基础知识
 ***
 ##### JVM内存划分
 * 方法区:<font color="green">线程共享</font>

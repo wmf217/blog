@@ -1,0 +1,12 @@
+---
+layout:     post
+title:      "操作系统"
+subtitle:   " \"操作系统基本知识\""
+date:       2017-06-08 20:44:00
+author:     "wmf"
+header-img: "img/java.jpg"
+catalog: true
+tags:
+    - linux
+---
+## 三要素
