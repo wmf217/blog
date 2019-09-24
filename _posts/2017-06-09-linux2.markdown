@@ -1,0 +1,181 @@
+---
+layout:     post
+title:      "操作系统(2)-命令"
+subtitle:   " \"操作系统基本知识\""
+date:       2017-06-08 20:44:00
+author:     "wmf"
+header-img: "img/java.jpg"
+catalog: true
+tags:
+    - linux
+---
+## 常用命令
+##### awk
+awk是一种逐行处理命令，所以它会逐行输出信息，当然可以根据条件选择输出哪些行，或者输出哪些列，以什么样的形式输出<br>
+[http://www.ruanyifeng.com/blog/2018/11/awk.html](http://www.ruanyifeng.com/blog/2018/11/awk.html)<br>
+awk实例一：<br>
+```
+cat test-awk.txt
+```
+```
+i am poa,and the number is 88888999
+```
+请从该文件中过滤出'Poe'字符串与33794712，最后输出的结果为：poa 88888999
+```
+awk -F '[, ]+' '{print $3,$NF}' test-awk.txt
+```
+解析：-F定义输入分割符，这里的分隔符有逗号和空格两种因此要使用正则表达式[, ]代表这种或的关系，+ 代表这个分割符可能是多个逗号或空格的组合<br>
+awk实例二：<br>
+统计/etc/passwd的账户人数<br>
+```
+awk 'BEGIN{count=0} {count++;print $0} END{print "the count is "count}' testpwd.txt
+```
+解析：{}中包含的是action(动作)，动作可以有多个，用;分割开，count++是定义一个count变量每读一行就加1，END时输出count总数
+awk实例三：<br>
+统计某个文件夹下的文件占用的字节数<br>
+当ll时，打印信息如下
+```
+total 16
+-rw-r--r-- 1 root root   32 Sep 21 16:49 test1
+-rw-r--r-- 1 root root   32 Sep 21 17:07 test2
+-rw-r--r-- 1 root root   39 Sep 22 14:04 test-awk.txt
+-rw-r--r-- 1 root root 1325 Sep 21 17:24 testpwd.txt
+```
+其中第五列就是每个文件的大小，那么指令如下
+```
+ll |awk 'BEGIN {size=0;} {size=size+$5;} END{print "[end]size is ",size/1024/1024"M"}'
+```
+输出结果
+```
+[end]size is  0.00136185M
+```
+或者可以使用if语句过滤掉第一行，取得同样效果
+```
+ll |awk 'BEGIN {size=0;} {if(NR>1){size=size+$5;}} END{print "[end]size is ",size/1024/1024"M"}'
+```
+awk实例四：<br>
+匹配/etc/passwd中所有包含root的行
+```
+awk '/root/{print $0}' testpwd.txt
+```
+解析：awk 'pattern{action}' {filenames}，其中pattern是正则标识，用于过滤且使用//包着，action为动作，用于输出<br>
+除了正则表达式，还可以使用布尔表达式，也就是true/false
+```
+awk -F: '$1=="root"{print $0}' testpwd.txt
+```
+或
+```
+awk -v FS=":" '$1=="root"{print $0}' testpwd.txt
+```
+解析，由于passwd文件中的内容是以:隔开的所以首先要确定输入分割符
+-F: 然后匹配第一列等于root的行
+##### top
+top命令用于查看当前的进程情况，里面包括了进程的统计、每一个进程的信息、系统的平均负荷
+##### uptime
+查看系统的平均负荷
+##### w
+查看系统平均负荷和当前登录人员信息，以上三个命令都可以查看系统负荷，也就是如下信息
+```
+load average: 0.00, 0.01, 0.05
+```
+三个值分别代表1分钟、5分钟、15分钟内的系统负荷，在cpu完全空闲的情况下值为0.00，在满负荷时值为1.0(实际上是CPU的个数，我的系统单核)，那么以上的值就是非常低，这时启动占用比较大的kafka(我内存只有1G，kafka压力很大)试试，得出如下数据
+```
+load average: 0.21, 0.14, 0.09
+```
+可以看到明显的变化<br>
+[http://www.ruanyifeng.com/blog/2011/07/linux_load_average_explained.html](http://www.ruanyifeng.com/blog/2011/07/linux_load_average_explained.html)
+##### netstat
+常用
+```
+netstat -ano
+```
+a: 所有的
+l: 只显示listening状态的
+n: 以数字形式展示
+o: 显示使用的进程
+[https://blog.csdn.net/sunxiaopengsun/article/details/78684701](https://blog.csdn.net/sunxiaopengsun/article/details/78684701)
+##### grep
+用于查找的Global search，并默认打印正行<br>
+现在查找test1文件中包含sfy字符串<br>
+可以用以上的awk
+```
+awk '/syf/ {print $0}' test1
+```
+或使用现在的grep
+```
+grep 'syf' test1 或 grep '^syf' test1
+```
+输出是一样的而且使用grep关键字有加粗提示<br>
+搜索总是有一个比较常见的问题就是大小写忽略，在grep中可以使用-i（ignore）参数来实现大小写忽略
+```
+grep -i '^Syf' test1
+```
+得到的效果依然一样<br>
+为了确定搜索到的内容具体在哪一行，可以使用-n（number）参数
+```
+grep -in '^Syf' test1
+```
+得到的结果如下
+```
+2:syf female 15 it
+```
+明显的标注了行数<br>
+为了统计符合搜索条件的总行数可以用-c（count）参数
+```
+grep -i -c --color '^Syf' test1
+```
+得到输出
+```
+1
+```
+如上默认搜索到结果都是将结果整行打印出来，可以使用-o（only）只打印匹配的字符串
+```
+grep -ino  --color '^Syf' test1
+```
+输出结果
+```
+2:syf
+```
+这时我们搜索sy查看匹配
+```
+grep -in 'Sy' test1
+```
+输出结果
+```
+2:syf female 15 it
+```
+可以看到还是搜到了syf，但有些时候只想精确的搜索包含单词sy的文本，这时就需要-w（word）来精确查（不演示了）<br>
+有时候我们并不是搜索某个字符串，而是搜索不带某个字符串的文本，这时可以使用-v
+```
+grep -v -inw 'Syf' test1
+```
+输出
+```
+1:wmf male 18 it
+```
+有时候可能需要同时从多个目标匹配这时候就可以使用-e
+```
+grep -inw -e 'Syf' -e 'wmf'  test1
+```
+这时输出
+```
+1:wmf male 18 it
+2:syf female 15 it
+```
+有时候我们只关心时候有结果不关心具体匹配的内容，这个时候可以使用静默模式-p
+[http://www.zsythink.net/archives/1733/](http://www.zsythink.net/archives/1733/)
+##### tail
+最常用的就是tail -f filename<br>
+会把 filename 文件里的最尾部的内容显示在屏幕上，并且不断刷新，只要 filename 更新就可以看到最新的文件内容<br>
+常用于跟踪日志文件来进行线上调试
+[https://www.runoob.com/linux/linux-comm-tail.html](https://www.runoob.com/linux/linux-comm-tail.html)
+##### less
+用于查看大文件，分页显示，例如查看历史命令并分页显示
+```
+history | less
+```
+ctrl+F: 向前一屏
+ctrl+B: 向后一屏
+[https://www.runoob.com/linux/linux-comm-less.html](https://www.runoob.com/linux/linux-comm-less.html)
+##### sed
+@todo
