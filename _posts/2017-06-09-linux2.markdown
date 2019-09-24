@@ -177,5 +177,30 @@ history | less
 ctrl+F: 向前一屏
 ctrl+B: 向后一屏
 [https://www.runoob.com/linux/linux-comm-less.html](https://www.runoob.com/linux/linux-comm-less.html)
+##### nl
+带行号输出文件<br>
+其效果和也可以用awk实现
+```
+awk '{print NR,$0}' test1
+```
 ##### sed
-@todo
+Linux sed 命令是利用脚本来处理文本文件<br>
+主要增删查改几种操作<br>
+在第二行之后新增
+```
+sed -i '2a syy female 16 wife' test1
+```
+cat test1
+```
+wmf male 18 it
+syf female 15 it
+syy female 16 wife
+```
+修改第三行
+```
+sed -i '3c syy female 16 love' test1
+```
+删除第三行
+```
+sed -i '3d' test1
+```
