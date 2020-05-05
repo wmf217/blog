@@ -1,0 +1,311 @@
+---
+layout:     post
+title:      "手写hashmap"
+subtitle:   " \"自己实现hashmap\""
+date:       2020-05-05 20:44:00
+author:     "wmf"
+header-img: "img/in-post/bigdata.jpg"
+catalog: true
+tags:
+    - java
+---
+## hashcode
+hash 即散列，它存在的意义相当于把一个很长的链表，按某一规则打碎成多个很短的链表，这样可以加快寻找速度<br>
+每个对象在内存中都有一个地址，用变量名来存储这个地址。但如果内存中的数据非常多(比如1000个)，那么根据这个地址去内存中查找数据的代价一定会相当高，相当于一个一个去遍历，现在我们把1000个内存分组，没10个为一组，一共有一百个组名，通过组名可以在查找最多10次就可以锁定数据，大大加快了查找的速度，这个组名就是hashcode，存储组名的数组就叫hash表，实际上hash表很大<br>
+[https://blog.csdn.net/weixin_38405253/article/details/91922340](https://blog.csdn.net/weixin_38405253/article/details/91922340)
+## hashMap的结构
+如果不用考虑速度，只需要一个长链表就可以实现一个map，插入数据直接插入到链表的表尾，查询数据只需要遍历一下就可以了，如下
+```java
+class Node<K, V> {
+
+    public Node(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K key;
+
+    public V value;
+
+    public Node next;
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "key=" + key +
+                ", value='" + value + '\'' +
+                ", next=" + next +
+                '}';
+    }
+}
+```
+插入
+```java
+if (n == null) {
+    n = node;
+} else if (n.key == key || n.key.equals(key)) {
+    n.value = value;
+} else {
+    while (n.next != null) {
+        n = n.next;
+        if (n.key == key || n.key.equals(key)) {
+            n.value = value;
+            return;
+        }
+    }
+    n.next = node;
+}
+```
+取出
+```java
+int i = 0;
+for (;;) {
+    i++;
+    if (n.key.equals(key)) {
+        System.out.println("查找到，查找次数"+i+"次");
+        return n;
+    }
+    n = n.next;
+    if (n == null) {
+        return null;
+    }
+}
+```
+通过next可以很轻松的实现长链表<br>
+但是当数据很多时，链表特别长，插入末尾时间变长，读取时间也变长，这就比较经典的长链表问题<br>
+innodb中使用一个B+tree结构来解决长链表问题，这里的思路也差不多，只不过这个tree只有两层，也就是说直接把长链表进行分组，比如有100个key-value，那就分成10组，那么每组就只有10个了，这样查询和插入的时间都会提高，这就是散列即hash，所以hashMap的本质就是有多个链表组成的数组<br>
+## 分组
+既然有了散列的概念接下来，就可以分组了，那么按照什么来分组，分多少组就成了问题，既然每个对象都有一个hashcode，那么可以用hashcode来实现分组<br>
+hashmap的数组初始化大小为16，2的4次方(好处接下来说)，那么很明显每个组的下标就是0,1,2,3...15，那么如何用hashcode计算出每个下标并尽量平均分配，最简单的一个方法hashcode % 16 直接取mod，这样可以实现计算出的下标就是0,1,2,3...15，但是取模运算的效率比较慢，因为数组的长度是2的4次方，所以可以用一下方式实现```hashcode & (n - 1)```，这样的结果与取模相同而且效率要快的多(疑问:为啥快)，如此就可以实现长链表按数组下标的短链表，实现了hash
+```java
+private int indexFor(int k, int l) {
+    return k & (l - 1);
+}
+
+private int hash(K key) {
+    return key.hashCode();
+}
+```
+## 自动扩容
+如上所述，数组长度初始化为16，但随着数据越来越多，不可避免长链表的再次出现，如果初始值太大数据少时又造成浪费，所以在再数据不断增多的过程中需不断给数组扩容，这里顶一个阀值，当map的实际个数超过这个阀值时自动扩容2倍(这样依然是2的次方)
+```java
+private float loadFactor = 0.75f;
+private void resize() {
+    if (size > capacity * loadFactor) {
+        capacity = capacity << 1; //扩容2倍
+    }
+}
+```
+但是问题出现了，当前的数组长度变化了，那么之前存入的值的分组值就要发生变化，本来在某组的数据可能通过重新计算应该出现在其他组，所以扩容的时候就需要进行现有数据的转移
+```java
+private void transfer(Node[] newNodes) {
+    Node[] src = nodes;
+    for (int i=0; i<src.length; i++) {
+        Node e;
+        if ((e=src[i])!=null) {
+            src[i] = null;
+            do {
+                Node next = e.next;
+                int index = indexFor(e.hash, capacity);
+                e.next = newNodes[index];
+                newNodes[index] = e;
+                e = next;
+            } while (e!=null);
+        }
+    }
+}
+```
+通过如上插入链表顶部的方法可以不用想插入新数据那样循环遍历去找链表尾部，可以提高转移的效率，但是会造成之前的链表顺序反转过来，好在map不需要在意排序，于是这样实现了自动扩容，当出现多个数据时也不会出现长链表问题
+## 测试
+最终代码如下
+```java
+class HashTab<K, V> {
+    
+    private int capacity;
+
+    private float loadFactor = 0.75f;
+
+    private int size;
+
+    private Node<K, V>[] nodes;
+
+    public HashTab() {
+        int capacity = 16;
+        this.capacity = capacity;
+        this.size = 0;
+        nodes = (Node<K, V>[]) new Node[capacity];
+    }
+    
+    private void resize() {
+//        Node<K, V>[] oldNodes = nodes;
+        if (size > capacity * loadFactor) {
+            capacity = capacity << 1;
+            Node<K, V>[] newNodes = (Node<K, V>[]) new Node[capacity];
+            transfer(newNodes);
+            nodes = newNodes;
+        }
+    }
+
+    private void transfer(Node[] newNodes) {
+        Node[] src = nodes;
+        for (int i=0; i<src.length; i++) {
+            Node e;
+            if ((e=src[i])!=null) {
+                src[i] = null;
+                do {
+                    Node next = e.next;
+                    int index = indexFor(e.hash, capacity);
+                    e.next = newNodes[index];
+                    newNodes[index] = e;
+                    e = next;
+                } while (e!=null);
+            }
+        }
+    }
+
+    protected void put(K key, V value) {
+        size++;
+        resize();
+        int hash = hash((K) key);
+        Node node = new Node(hash, key, value);
+        int index = indexFor(hash, capacity);
+        Node n;
+        if ((n = nodes[index]) == null) {
+            nodes[index] = node;
+        } else if (n.key == key || n.key.equals(key)) {
+            n.value = value;
+        } else {
+            while (n.next != null) {
+                n = n.next;
+                if (n.key == key || n.key.equals(key)) {
+                    n.value = value;
+                    return;
+                }
+            }
+            n.next = node;
+        }
+    }
+
+    protected V get(K key) {
+        Node node = findByKey(key);
+        if (node == null) {
+            return null;
+        }
+        return (V) node.value;
+    }
+
+    private Node findByKey(K key) {
+        int index = indexFor(hash(key), capacity);
+        Node n;
+        if ((n = nodes[index]) == null) {
+            return null;
+        }
+        System.out.println("index:" + index);
+        int i = 0;
+        for (;;) {
+            i++;
+            if (n.key.equals(key)) {
+                System.out.println("查找到，查找次数"+i+"次");
+                return n;
+            }
+            n = n.next;
+            if (n == null) {
+                return null;
+            }
+        }
+    }
+
+    private int indexFor(int k, int l) {
+        return k & (l - 1);
+    }
+
+    private int hash(K key) {
+        return key.hashCode();
+    }
+
+    class Node<K, V> {
+
+        public Node(int hash, K key, V value) {
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+        }
+
+        public int hash;
+
+        public K key;
+
+        public V value;
+
+        public Node next;
+
+        @Override
+        public String toString() {
+            return "Node{" +
+                    "key=" + key +
+                    ", value='" + value + '\'' +
+                    ", next=" + next +
+                    '}';
+        }
+    }
+}
+```
+大概执行的效率如下
+```java
+public static void main(String[] args) {
+    long startTime = System.currentTimeMillis();
+    HashMap<Integer, String> map2 = new HashMap<>();
+    map2.put(1, "李雷");
+    map2.put(2, "韩梅梅");
+    map2.put(2, "韩旭");
+    for (int i = 0; i < 1000000; i++) {
+        map2.put(i + 3, "王" + i);
+    }
+    long endTime = System.currentTimeMillis();
+    System.out.println("原map插入时间：" + (endTime - startTime) + "ms");
+    long startTime1 = System.currentTimeMillis();
+    System.out.println(map2.get(547981));
+    long endTime1 = System.currentTimeMillis();
+    System.out.println("原map查找时间：" + (endTime1 - startTime1) + "ms");
+    long startTime2 = System.currentTimeMillis();
+    HashTab map = new HashTab<Integer, String>();
+    map.put(1, "李雷");
+    map.put(2, "韩梅梅");
+    map.put(2, "韩旭");
+    for (int i = 0; i < 1000000; i++) {
+        map.put(i + 3, "王" + i);
+    }
+    long endTime2 = System.currentTimeMillis();    //获取结束时间
+    System.out.println("自map插入时间：" + (endTime2 - startTime2) + "ms");    //输出程序运行时间
+    long startTime3 = System.currentTimeMillis();
+    System.out.println(map.get(547981));
+    long endTime3 = System.currentTimeMillis();    //获取结束时间
+    System.out.println("自map获取时间：" + (endTime3 - startTime3) + "ms");    //输出程序运行时间
+}
+// 执行结果
+// 原map插入时间：477ms
+// 王547978
+// 原map查找时间：0ms
+// 自map插入时间：434ms
+// index:547981
+// 王547978
+// 自map获取时间：0ms
+```
+可以看到基本速率已经很快和hashmap基本差不多(但是只是简单实现，必然忽略很多问题)
+## 扩展
+在java1.8中自动扩容有一个改进，不需要重新计算hash值，注释如下
+```java
+/**
+* Initializes or doubles table size.  If null, allocates in
+* accord with initial capacity target held in field threshold.
+* Otherwise, because we are using power-of-two expansion, the
+* elements from each bin must either stay at same index, or move
+* with a power of two offset in the new table.
+*
+* @return the table
+*/
+```
+在自动扩容中，由于扩展的大小是2的次方，所以原链表中的每个节点有两种情况，一种是坐标不变，一种是坐标值恰好是扩容的尺寸<br>
+根据这种发现，1.8中每次循环链表拆分成两个链表一个是保留的，直接赋值给当前下标，一个是增加的，直接赋值给当前下表+扩容尺寸，避免的翻转的情况，也增加了链表长度的平均性和效率，比如当前数组坐标1，扩容了16，那么变化的节点直接重新做一个链表放到17中(于同样的规律，不可能有其他的下标数据会移动到17中)，所以1分为两个链表放到1和17，2分为两个链表放到2和18，以此类推
+
+红黑树(todo)
