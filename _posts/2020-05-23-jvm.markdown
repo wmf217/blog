@@ -1,0 +1,101 @@
+---
+layout:     post
+title:     "JVM的几道美团面试题"
+subtitle:   " \"JVM的几道美团面试题\""
+date:       2020-05-23 21:44:00
+author:     "wmf"
+header-img: "img/in-post/bigdata.jpg"
+catalog: true
+tags:
+    - java
+---
+## 请解释一下对象的创建过程
+```java
+class T {
+    int m = 2;
+}
+T t = new T();
+```
+转换为字节码后，有几个关键的步骤
+```
+0 new #2 <T>
+4 invokespecial #3 <T.<init>>
+7 astore_1
+```
+0 为对象开辟空间，此时对象中的m值为0<br>
+4 invokespecial init，初始化特殊，也就是m的初始化赋值。此时m变为2<br>
+7 t 指向新对象<br>
+对象创建过程有重要的一点，叫做半初始化，即在对象的创建过程中有一段时间m是0
+## 加DCL需不需要volatile
+DCL(double check lock)即双重锁检查，单例模式常用方法
+```java
+class Singleton {
+    private static Singleton instance;
+    private static byte[] lock = new byte[0];
+    private Singleton () {}
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
+以上两个if即为双重检查，第一个判断是不是对象是不是空，如果不是空则去争取创建对象的锁，争取到了之后，再判断一次是不是空，如果两步有任意一步不是空，则直接返回已创建好的对象<br>
+举个类似的例子，男生宿舍有一个发电室，非常小只能容纳一个人进入，并且房门有一把锁，有一天突然停电了，有A,B两位同学想处理这个事情，A首先进去了，获得了锁，他怕再有人进来把锁锁上，B走到发电室门口打电话给是有询问来电了吗，答案是否(第一重判断为null)，所以在发电室门口等着锁被打开，过一会A打开电闸了，释放了锁，B马上获得锁进入了发电室，进去修之前再打电话问了一遍一看修好了，直接返回了(第二重判断不为null)，此时有来了个C同学，到达发电室之前打了电话问室友修好了，答案是修好了(第一重判断不为null)，直接返回<br>
+回到问题本身也就是instance需不需要volitale修饰<br>
+volitale的一个重要作用就是告诉jvm这个变量不稳定，不要从线程缓存中读取，要去内存中直接获取，保证可见性<br>
+volitale还有一个重要作用就是禁止指令重排序，当对象创建时，按照对象的创建过程，正常事先走init(初始化成员变量)再 astore(将变量指向新对象地址)，但是由于jvm的指令重排序问题，会出现astore在init之前执行的情况，这时第一重if判断已经判断不为空了，但对象的初始化还没完成，直接return instance是个半成品<br>
+好比上面的例子，A同学指令重排序，还没有修好确已经广播出去说自己修好了，B一看修好了直接回去打开电脑，电一闪一闪的直接把电脑干崩溃了(半成品)<br>
+所以结论是需要，最终代码
+```java
+class Singleton {
+    private volatile static Singleton instance;
+    private static byte[] lock = new byte[0];
+    private Singleton () {}
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
+## 上一个问题的联想
+双重锁很像CAS(compare and swap)，CAS是原子性的，或者叫自旋锁，乐观锁<br>
+CAS的一个重大问题就是ABA问题，这时需要版本号来解决
+## 对象在内存中的布局
+分为markword/klasspointer/instance data/padding<br>
+markword 8个字节 包含锁信息/hashcode/GC的age<br>
+给对象上锁，其实修饰修改对象的markword<br>
+klasspointer 4个字节 是指向类元数据的指针，jvm根据他来判断类型<br>
+instance data 是实际数据区<br>
+padding 自动补齐，需要补齐到8的倍数，这样可以提高效率<br>
+因此```new Object```占16个字节
+## 对象头具体包括什么
+即markword 和 klasspointer 共同称作对象头
+## 对象怎么定位
+<img class="shadow" src="/img/in-post/objectFind.png" width="720"/>
+句柄方式的好处：方便GC回收，t不需要变
+直接指针：快
+## 对象怎么分配
+<img class="shadow" src="/img/in-post/objectAd.png" width="720"/>
+一.如果对象非常小，且不能逃逸(只在一个方法中被使用)，则分配到栈，栈的好处非常明显，不需要GC，方法执行完自动销毁<br>
+二.如果不满足入栈的条件且非常小，则进入TLAB(thread local alloction buffer)，TLAB位于内存中的伊甸区(伊甸区为每个线程分配一小块空间，避免线程争抢)，当然线程本地缓冲区没有地了直接进入伊甸区<br>
+三.如果不能入栈又很大则直接进入老年区，最终通过FULL GC被垃圾回收
+四.伊甸区的对象经过一次GC如果没清掉后会进入S1(survivor1)区，再经历GC，如果没清除掉进入S2(survivor2)区，再一次回到S1，只要清不掉就会在每一次GC后在S1和S2之间跳转，每次跳转markword中的GC age++，知道age到达一定程度，进入老年区用FUll GC清除
+
+
+
+
+
+
+
