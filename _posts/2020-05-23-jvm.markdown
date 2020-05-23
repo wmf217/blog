@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:     "JVM的几道美团面试题"
-subtitle:   " \"JVM的几道美团面试题\""
+title:     "JVM的几道面试题"
+subtitle:   " \"JVM的几道面试题\""
 date:       2020-05-23 21:44:00
 author:     "wmf"
 header-img: "img/in-post/bigdata.jpg"
@@ -90,7 +90,7 @@ padding 自动补齐，需要补齐到8的倍数，这样可以提高效率<br>
 <img class="shadow" src="/img/in-post/objectAd.png" width="720"/>
 一.如果对象非常小，且不能逃逸(只在一个方法中被使用)，则分配到栈，栈的好处非常明显，不需要GC，方法执行完自动销毁<br>
 二.如果不满足入栈的条件且非常小，则进入TLAB(thread local alloction buffer)，TLAB位于内存中的伊甸区(伊甸区为每个线程分配一小块空间，避免线程争抢)，当然线程本地缓冲区没有地了直接进入伊甸区<br>
-三.如果不能入栈又很大则直接进入老年区，最终通过FULL GC被垃圾回收
+三.如果不能入栈又很大则直接进入老年区，最终通过FULL GC被垃圾回收<br>
 四.伊甸区的对象经过一次GC如果没清掉后会进入S1(survivor1)区，再经历GC，如果没清除掉进入S2(survivor2)区，再一次回到S1，只要清不掉就会在每一次GC后在S1和S2之间跳转，每次跳转markword中的GC age++，知道age到达一定程度，进入老年区用FUll GC清除
 
 

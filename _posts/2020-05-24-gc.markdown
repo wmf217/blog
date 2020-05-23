@@ -1,0 +1,60 @@
+---
+layout:     post
+title:     "GC算法"
+subtitle:   " \"GC算法\""
+date:       2020-05-24 22:44:00
+author:     "wmf"
+header-img: "img/in-post/bigdata.jpg"
+catalog: true
+tags:
+    - java
+---
+## GC清除的三种算法
+1.标记清楚(Mark-Sweep)<br>
+两步，第一步标记，第二步清除<br>
+最大的缺点，碎片化<br>
+2.标记整理(Mark-Sweep-Compact)<br>
+清除之后把有用的堆到一起，目的就是为了减少碎片化，但是很慢<br>
+3.复制算法(Copy)<br>
+将内存分为两个区，使用一个区，GC时把存活的对象放到另外一个区，第一个区整体清除(效率极高)，如此往复，存活的对象不断在两个区跳转，直到被清除掉<br>
+## 分代算法
+此时内存分为伊甸区和老年区，年轻的在伊甸区，年老的或比较大的对象在老年区，伊甸区和老年区在分代算法中的回收器是不一样的，由于分带，最早的回收器都是成对出现的
+## JVM 的GC有如下几种
+<img class="shadow" src="/img/in-post/gc.png" width="720"/>
+## Serial
+a stop-the-world(STW), copy collector which uses a single thread
+<img class="shadow" src="/img/in-post/serial.png" width="720"/>
+使用的是单线程线程，使用复制算法<br>
+其实是标记清楚和复制算法的结合，分为伊甸区和S1区，S2区,伊甸区的对象经过一次GC如果没清掉后会进入S1(survivor1)区，再经历GC，如果没清除掉进入S2(survivor2)区，再一次回到S1，只要清不掉就会在每一次GC后在S1和S2之间跳转，每次跳转对象头markword中的GC age++，知道age到达一定程度，进入老年区
+## Serial Old
+与Serial配合的老年区回收期<br>
+a stop-the-world(STW),mark-sweep-compact that  uses a single thread
+<img class="shadow" src="/img/in-post/serialOld.png" width="720"/>
+依然是单线程，使用标记压缩算法
+## Parallel Scavenge
+a stop-the-world(STW),copy collector which uses a multiple threads
+<img class="shadow" src="/img/in-post/parallerScavenge.png" width="720"/>
+相比于Serial，使用的是多线程共同清理<br>
+与它的老年代统称为PS/PO
+## Parallel Old
+与Parallel Scavenge配合的老年算法
+## ParNew
+和PS基本差不多，只是为了与CMS配合
+<img class="shadow" src="/img/in-post/ParNew.png" width="720"/>
+## CMS
+todo 重点
+## 调优
+arthas 和 jmap
+
+
+
+
+
+
+
+
+
+
+
+
+
