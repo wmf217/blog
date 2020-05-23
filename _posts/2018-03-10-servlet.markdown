@@ -1,0 +1,33 @@
+---
+layout:     post
+title:      "servlet"
+subtitle:   " \"servlet\""
+date:       2018-03-10 19:25:00
+author:     "wmf"
+header-img: "img/java.jpg"
+catalog: true
+tags:
+    - java
+    - javaee
+---
+### servlet 基础
+***
+#### http基础
+http的基本类型：键值对<br/>
+content-type 数据类型('图片'，'数据'...)<br/>
+http是无状态的，一次是一次，每次都是一个新的开始<br/>
+http是无连接的，但http1.1版本之后在响应结束后持续一点时间的链接再关闭<br/>
+#### tomcat
+所谓服务器不过就是一个代码，他可以持续执行```while(true)```，是一个可以根据用户请求实时调用逻辑代码的一个容器<br>
+tomcat是一个java写的服务器，它一直运行，等待连接，执行放入其中的逻辑代码(他可以执行你放入的代码)<br>
+这是问题来了，tomcat无法知道每个人具体执行的代码，怎么能做到执行个人放入其中的代码，解决这个问题的思路很简单，就是定义接口<br>
+同时tomcat还要求需要有一个web.xml，按照它的规定写出请求和方法之间的映射关系
+#### servlet
+servlet就是这个接口，接口全名是HttpServlet，它里面的常用方法service、doPost、doGet
+#### tip
+将tomcat中的class文件删掉并不影响程序的执行，因为tomcat在初始化时就已经将class文件代码加载到内存
+#### servletContext
+tomcat再初始化时会创建一个servletContext对象，用来存储一些全局变量<br>
+1.servletContext 可以读取web.xml中的1一些配置信息
+2.servletContext 可以获取web-root下资源的绝对路径
+3.servletContext 可以获取根目录下资源的流对象
