@@ -20,7 +20,7 @@ tags:
 ## 分代算法
 此时内存分为伊甸区和老年区，年轻的在伊甸区，年老的或比较大的对象在老年区，伊甸区和老年区在分代算法中的回收器是不一样的，由于分带，最早的回收器都是成对出现的
 ## JVM 的GC有如下几种
-<img class="shadow" src="/img/in-post/gc.png" width="720"/>
+<img class="shadow" src="/img/in-post/gc.jpg" width="720"/>
 ## Serial
 a stop-the-world(STW), copy collector which uses a single thread
 <img class="shadow" src="/img/in-post/serial.png" width="720"/>
@@ -40,7 +40,7 @@ a stop-the-world(STW),copy collector which uses a multiple threads
 与Parallel Scavenge配合的老年算法
 ## ParNew
 和PS基本差不多，只是为了与CMS配合
-<img class="shadow" src="/img/in-post/ParNew.png" width="720"/>
+<img class="shadow" src="/img/in-post/parNew.png" width="720"/>
 ## CMS
 todo 重点
 ## 调优
