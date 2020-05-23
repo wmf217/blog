@@ -630,6 +630,38 @@ public class treeMap {
 	}
 }
 ```
+#### 包装类型
+由于java是面向对象的语言，每一个基本类都有一个相应的包装类，如int的包装类Interger
+```java
+Interger a = new Interger(10);
+Interger b = new Interger(10);
+a == b; // false
+```
+a,b存储的是两个对象的不同地址，因此不相等
+##### 自动拆箱
+```java
+int c = 10;
+a == c; // true
+```
+当包装类和基本类进行比较时，包装类会自动拆箱转化成基本类再进行比较，所以结果是true
+###### 自动装箱
+```java
+Interger d = 10;
+```
+这种情况java会自动装箱，相当于把10 int型转换为Interger型，但java中有个Interger的常量池，缓存了-128到127的Interger对象，d会直接指向常量池中的对象，因此
+```java
+d == a; //false 一个指向常量池一个指向新开辟的空间
+Interger e = 10;
+e == d; //true 都指向常量池
+```
+而
+```java
+Interger f = 10000;
+Interger g = 10000;
+f == g; // false, 不在常量池范围，都会新开辟内存空间
+```
+```Interger h = Interger.valueof(10)``` 与 ```Interger h= 10```的效果是一样的
+
 
 
 
