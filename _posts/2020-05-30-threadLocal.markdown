@@ -86,6 +86,8 @@ static class Entry extends WeakReference<ThreadLocal<?>> {
 以上所说，当a=null，指向空间被GC回收，本地线程map中的key自动变为空，但是value中的如果是一个指向某Object的引用，那么这个Object还是有强引用指向，由于key已经变为null，永远不可能访问到value，那么value指向的内存空间就无法被GC清除，造成内存泄露
 ## 解决方案 
 为了解决这个问题，只要a=null之前执行a.remove()就可以解决
+## 弱引用的用法总结
+当你有a，b两个变量指向同一内存空间，而b依赖于a，你希望当a=null，b自动变为null，那么b就可以使用弱引用指向a
 
 
 
