@@ -13,17 +13,17 @@ tags:
 文章主要学习线程阀--多线程的交互--阻塞队列
 ### 阻塞队列
 ##### 队列
-Queue: 队列，先进先出(FIFO)
-Deque: 双端队列。两端都可以进出，当约束从一个口进出时，就形成栈Stack
+Queue: 队列，先进先出(FIFO)<br>
+Deque: 双端队列。两端都可以进出，当约束从一个口进出时，就形成栈Stack<br>
 BlockQueue: 阻塞队列，支持两个附加操作，take-获取队列的线程会等待队列变为非空，put-存储元素的线程会等待队列变为可用（非满）
 ##### 阻塞队列4种处理方式
-抛出异常 add remove element 会抛出异常
-返回特殊值 offer poll peek
-一直阻塞 put take
-超时退出 offer poll
+抛出异常 add remove element 会抛出异常<br>
+返回特殊值 offer poll peek<br>
+一直阻塞 put take<br>
+超时退出 offer poll<br>
 ### 实现
 ##### ArrayBlockingQueue 
-由数组支持的有界阻塞队列 该实现可以设置公平性@TODO
+由数组支持的有界阻塞队列 该实现可以设置公平性@TODO<br>
 源码：
 ```java
 /**
@@ -52,15 +52,15 @@ public void put(E e) throws InterruptedException {
 ##### PriorityBlockingQueue
 支持优先级的无界阻塞队列，<font color="red">生产者的速度绝对不能快于消费者的速度，否则会导致内存爆了</font>
 ##### DelayQueue
-延时队列，支持优先级和延迟获取，队列中的元素需要实现delayed接口和comparable接口，创建元素后可以指定需要多久才能在队列中获取到该元素
-使用场景：
+延时队列，支持优先级和延迟获取，队列中的元素需要实现delayed接口和comparable接口，创建元素后可以指定需要多久才能在队列中获取到该元素<br>
+使用场景：<br>
 缓存系统设计：可以用DelayQueue保存缓存的有效期，然后持续检索队列，如果检测到了数据，说明有效期到了
 定时任务调度：可以通过延迟，定时执行任务，TimeQueue就是使用DelayQueue实现的
 ##### SynchronousQueue
-同步队列，该队列不存储元素，每一个put必须等待一个take操作，非常适合传递性场景，从一个线程传递给另一个线程
-SynchronousQueue的吞吐量远高于ArrayBlockingQueue和LinkedBlockingQueue
-创建SynchronousQueue有两种方式(TODO):
-公平模式：使用公平锁，配合FIFO队列阻塞多余生产者和消费者，内部使用TransferQueue
+同步队列，该队列不存储元素，每一个put必须等待一个take操作，非常适合传递性场景，从一个线程传递给另一个线程<br>
+SynchronousQueue的吞吐量远高于ArrayBlockingQueue和LinkedBlockingQueue<br>
+创建SynchronousQueue有两种方式(TODO):<br>
+公平模式：使用公平锁，配合FIFO队列阻塞多余生产者和消费者，内部使用TransferQueue<br>
 非公平模式：非公平锁，配合LIFO队列管理多余的生产者和消费者，内部使用TransferStack(这种方式容易造成饥渴)
 ```java
 public class SynchronousQueue<E> extends AbstractQueue<E>
@@ -246,21 +246,21 @@ Consumer Thread-5 your lucky number is 5
 ##### LinkedBlockingDeque
 链表支持的无界双向阻塞队列。可以从前后添加或移除，比如有addFirst和addLast等方法
 ##### LinkedTransferQueue
-是一个由链表结构组成的无界传输阻塞队列
-实现了BlockingDeque接口
->Doug Lea 这样评价它：TransferQueue是一个聪明的队列，它是 ConcurrentLinkedQueue，SynchronousQueue(<font color="green">公平模式</font>), LinkedBlockingQueue的超集
+是一个由链表结构组成的无界传输阻塞队列<br>
+实现了BlockingDeque接口<br>
+>Doug Lea 这样评价它：TransferQueue是一个聪明的队列，它是 ConcurrentLinkedQueue，SynchronousQueue(<font color="green">公平模式</font>), LinkedBlockingQueue的超集<br>
 
-它是一个多面手，高性能的一个组合体
-比如说：上面介绍SynchronousQueue时提到，<font color="green">take方法调用的是TransferQueue的transfer方法</font>，所以当使用LinkedTransferQueue的transfer它的效果和SynchronousQueue几乎一样（如果队列不为空则阻塞），而使用LinkedTransferQueue的put方法,则和LinkedBlockingQueue一样了（可以向队列中添加无界的元素）
->transfer的算法比较复杂，大概意思是所谓双重数据结构（dual data structures），之所以叫双重，主要原因是方法都是通过两个步骤完成的：保留和完成。比如，消费者线程从一个队列取元素，发现队列是空，它就生成一个空元素放入队列，所谓空元素就是数据项字段为空，然后消费者在这个字段上继续等待，叫做*保留*，直到一个生产者意欲向队列中放入一个元素，这里它发现最前面的元素的数据项字段为NULL，它就直接把数据填充到这个元素中，即*完成*（元素的传送）
+它是一个多面手，高性能的一个组合体<br>
+比如说：上面介绍SynchronousQueue时提到，<font color="green">take方法调用的是TransferQueue的transfer方法</font>，所以当使用LinkedTransferQueue的transfer它的效果和SynchronousQueue几乎一样（如果队列不为空则阻塞），而使用LinkedTransferQueue的put方法,则和LinkedBlockingQueue一样了（可以向队列中添加无界的元素）<br>
+>transfer的算法比较复杂，大概意思是所谓双重数据结构（dual data structures），之所以叫双重，主要原因是方法都是通过两个步骤完成的：保留和完成。比如，消费者线程从一个队列取元素，发现队列是空，它就生成一个空元素放入队列，所谓空元素就是数据项字段为空，然后消费者在这个字段上继续等待，叫做*保留*，直到一个生产者意欲向队列中放入一个元素，这里它发现最前面的元素的数据项字段为NULL，它就直接把数据填充到这个元素中，即*完成*（元素的传送）<br>
 
-transfer方法提供了线程之间直接交换数据的捷径方法
-1. transfer(E e)，如果当前有一个消费者正在等待，则立即移交，否则阻塞（SynchronousQueue的put）
-2. tryTransfer(E e)，有消费者等待则传送，无则返回false
-3. tryTransfer(E e, long timeout, TimeUnit unit)，与上面几乎一样只不过在没有的情况下会等待一段规定时间
-4. hasWaitingConsumer()，查看是否有等待的消费者
-5. getWaitingConsumerCount()
-6. ~~size()~~ 不准确
+transfer方法提供了线程之间直接交换数据的捷径方法<br>
+1. transfer(E e)，如果当前有一个消费者正在等待，则立即移交，否则阻塞（SynchronousQueue的put）<br>
+2. tryTransfer(E e)，有消费者等待则传送，无则返回false<br>
+3. tryTransfer(E e, long timeout, TimeUnit unit)，与上面几乎一样只不过在没有的情况下会等待一段规定时间<br>
+4. hasWaitingConsumer()，查看是否有等待的消费者<br>
+5. getWaitingConsumerCount()<br>
+6. ~~size()~~ 不准确<br>
 
 ###### 源码
 ```java
@@ -356,10 +356,10 @@ transfer 3
 Consumer Thread-1 your lucky number is 3
 ....
 ```
-分析：
-使用transfer方法一定上一个transfer的参数被消费者take走才能执行下一个transfer
-所以transfer方法在队列不为空时是阻塞的，这里也不用考虑是否FIFO，因为只有一个元素
-那么接下来来验证下TransferQueue是否是FIFO，将生产者的transfer修改为put
+分析：<br>
+使用transfer方法一定上一个transfer的参数被消费者take走才能执行下一个transfer<br>
+所以transfer方法在队列不为空时是阻塞的，这里也不用考虑是否FIFO，因为只有一个元素<br>
+那么接下来来验证下TransferQueue是否是FIFO，将生产者的transfer修改为put<br>
 out:
 ```
 transfer 1
@@ -373,10 +373,10 @@ transfer 6
 transfer 7
 Consumer Thread-1 your lucky number is 3
 ```
-分析：take2时，队列中已经有1-4 4个元素，取出的是2，往后take的值依次是3,4,5,6
-可见LinkedTransferQueue是符合FIFO的
-如果对以上代码再作如下修改：
-Consumer:
+分析：take2时，队列中已经有1-4 4个元素，取出的是2，往后take的值依次是3,4,5,6<br>
+可见LinkedTransferQueue是符合FIFO的<br>
+如果对以上代码再作如下修改：<br>
+Consumer:<br>
 ```java
 @Override
 public void run() {
@@ -432,14 +432,14 @@ Consumer Thread-1 your lucky number is 2
 Consumer Thread-5 your lucky number is 5
 ```
 分析：
-两次结果不一样，之前已经证明了，1,2,3,4,5的transfer顺序
-可是输出的结果却没有排序
-而且消费者的线程k不一定对应生产出来的i
-接下来分析一下原因
-首先各个线程执行的快慢不能保证(这是一定不能保证的)
-其次有可能是当有多个消费者同时要消费时，优先级无法保证
-（不一定由哪个消费者线程获取到队列中的这个唯一元素，这是一种猜测接下来证实）
-可以把生产者生产的时间间隔设长，让消费者竞争看一下：
+两次结果不一样，之前已经证明了，1,2,3,4,5的transfer顺序<br>
+可是输出的结果却没有排序<br>
+而且消费者的线程k不一定对应生产出来的i<br>
+接下来分析一下原因<br>
+首先各个线程执行的快慢不能保证(这是一定不能保证的)<br>
+其次有可能是当有多个消费者同时要消费时，优先级无法保证<br>
+（不一定由哪个消费者线程获取到队列中的这个唯一元素，这是一种猜测接下来证实）<br>
+可以把生产者生产的时间间隔设长，让消费者竞争看一下：<br>
 Producer:
 ```java
 int i = 0;
@@ -464,13 +464,13 @@ Consumer Thread-3 your lucky number is 3
 Consumer Thread-5 your lucky number is 5
 ```
 分析：
-可以看到首先是Thread-2 take到了第一个元素1，而Thread-1拿到了2
-Thread-3拿到了第三个元素3,输出在4后面是因为线程执行的慢了
-而thread-1晚于Thread-2有两种可能：
-一种是thread-1 发出take请求本来就慢于Thread-2
-一种是thread-1 发出take请求比较快，但是1元素还是被Thread-2争夺到了
-所以还是无法确定TransferQueue是否公平
-如下修改：
+可以看到首先是Thread-2 take到了第一个元素1，而Thread-1拿到了2<br>
+Thread-3拿到了第三个元素3,输出在4后面是因为线程执行的慢了<br>
+而thread-1晚于Thread-2有两种可能：<br>
+一种是thread-1 发出take请求本来就慢于Thread-2<br>
+一种是thread-1 发出take请求比较快，但是1元素还是被Thread-2争夺到了<br>
+所以还是无法确定TransferQueue是否公平<br>
+如下修改：<br>
 Producer:
 ```java
 TimeUnit.SECONDS.sleep(10); //多睡一会让消费者就位
@@ -496,10 +496,10 @@ Consumer Thread-7 your lucky number is 7
 Consumer Thread-5 your lucky number is 5
 Consumer Thread-3 your lucky number is 3
 ```
-多试几次，得到的结果类似，10秒之后生产者开始很快的循环生产数据
-所有消费者几乎同时反应，所以执行的先后顺序很难保证
-但每个消费者start的时间间隔500ms，基本可以保证线程是按照k的先后来take的
-take到的值i和自己的k对的上，所以结论
+多试几次，得到的结果类似，10秒之后生产者开始很快的循环生产数据<br>
+所有消费者几乎同时反应，所以执行的先后顺序很难保证<br>
+但每个消费者start的时间间隔500ms，基本可以保证线程是按照k的先后来take的<br>
+take到的值i和自己的k对的上，所以结论<br>
 **TransferQueue是公平模式的**
 
 
